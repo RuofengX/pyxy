@@ -10,7 +10,7 @@ class SocksError(Exception):
     pass
 
 
-class ClientBroker(LogMixin):
+class SockRelay(LogMixin):
     """维护本地Socks5代理"""
     username = 'username'
     password = 'password'
@@ -176,7 +176,7 @@ class ClientBroker(LogMixin):
 
 
 if __name__ == '__main__':
-    proxy_server = ClientBroker(
+    proxy_server = SockRelay(
         sockProxyAddr='localhost',
         sockProxyPort=9011,
         remoteAddr='192.168.3.131',
