@@ -99,11 +99,13 @@ class ClientBroker(LogMixin):
                 trueDomain = ''
                 trueIpBytes = await reader.readexactly(4)
                 trueIp = socket.inet_ntoa(trueIpBytes)
+                pass
             elif addressType == 3:  # 域名
                 trueIp = ''
                 domainLength = (await reader.readexactly(1))[0]  # 返回int类型
                 trueDomainBytes = await reader.readexactly(domainLength)
                 trueDomain = trueDomainBytes.decode('utf-8')
+                pass
             else:
                 raise SocksError(f'不支持的地址类型{addressType}')
 

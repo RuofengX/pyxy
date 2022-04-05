@@ -66,7 +66,7 @@ class Server(LogMixin):
             return
         
         except Exception as e:
-            logger.error(f"请求处理失败 > {e}")
+            logger.error(f"未知错误 > {type(e)} {e}")
 
 
         finally:
