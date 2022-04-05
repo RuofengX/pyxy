@@ -1,3 +1,4 @@
+# coding: utf-8
 import asyncio
 from objprint import objstr
 from aisle import LOG, LogMixin
@@ -15,7 +16,7 @@ class Server(LogMixin):
     async def start(self, addr: str, port):
         """异步入口函数"""
         server = await asyncio.start_server(self.handler, addr, 9190)
-        self.logger.warn(f"服务器启动在{addr}:{port}")
+        self.logger.warning(f"服务器启动在{addr}:{port}")
         async with server:
             await server.serve_forever()
 
