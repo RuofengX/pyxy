@@ -1,14 +1,9 @@
-from asyncore import write
 import socket
-from sqlite3 import InternalError
 from client import Client, RemoteClientError
 from pyxy import SOCKS_VERSION
-from server import Server
 from aisle import LogMixin
 from struct import pack, unpack
 import asyncio
-from SafeBlock import Block, Key, DecryptError
-from socketserver import ThreadingMixIn, TCPServer, StreamRequestHandler
 import shortuuid
 
 class SocksError(Exception):

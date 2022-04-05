@@ -1,13 +1,8 @@
 from codecs import StreamWriter
-import socket
 import asyncio
-from sys import excepthook
-from tkinter.tix import Tree
 from typing import Tuple
-from objprint import op
 from SafeBlock import Key, Block, DecryptError
 from aisle import LOG, LogMixin
-import shortuuid
 
 
 class RemoteClientError(Exception):
