@@ -94,6 +94,7 @@ class Server(LogMixin):
                 pass
             finally:
                 self.connections -= 1
+                self.logger.info(f'当前连接数：{self.connections}')  # TODO: FOR DEBUG
         
     @property
     def requestCount(self):
