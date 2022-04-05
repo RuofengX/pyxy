@@ -97,7 +97,6 @@ class Server(LogMixin):
         while True:
             self.logger.info(f'当前连接数 > {self.connections}')
             self.logger.info(f'已处理连接 > {self.__count}')
-            self.logger.info(f'对象使用内存 > {sys.getsizeof(self)/1024.1024:.2f}MB')
             await asyncio.sleep(10)
         
     @property
