@@ -42,9 +42,9 @@ class ClientBroker(LogMixin):
 
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
-        self.logger.info(f'接收来自{writer.get_extra_info("peername")}的连接')
         requestId = shortuuid.ShortUUID().random(length=8).upper()
         logger = self.logger.getChild(f'{requestId}')
+        logger.info(f'接收来自{writer.get_extra_info("peername")}的连接')
         try:
             # Socks5参考文献
             # [RFC1928](https://www.quarkay.com/code/383/socks5-protocol-rfc-chinese-traslation )
@@ -156,7 +156,9 @@ class ClientBroker(LogMixin):
             logger.error(f'Socks错误 > {e}')
 
         except OSError as e:
+            
             logger.error(f'OS错误 > {e}')
+            
         except Exception as e:
             logger.error(f'未知错误 > {e}')
 
