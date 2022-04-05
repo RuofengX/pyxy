@@ -12,6 +12,9 @@ class Server(LogMixin):
         super().__init__()
         self.key = Key('1b94f71484d0488681ef7c9a625a2069')
         self.connections = 0
+        
+        self.__count = 0
+        
         asyncio.run(self.start(addr=addr, port=port))
 
     async def start(self, addr: str, port):
@@ -24,8 +27,8 @@ class Server(LogMixin):
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
         self.connections += 1
-        self.logger.info(f'当前连接数 > {self.connections}')
-        requestId = shortuuid.ShortUUID().random(length=8).upper()
+        self.logger.info(f'当前连接数 > {self.connections}')  # TODO: FOR DEBUG
+        requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
         isClosed = False
         try:
@@ -87,6 +90,12 @@ class Server(LogMixin):
             finally:
                 self.connections -= 1
 
+    @property
+    def requestCount(self):
+        """返回该服务器处理的请求总量"""
+        self.__count += 1
+        return self.__count
+    
     async def __exchangeBlock(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, payload: dict=None):
         '''远程的连接预协商'''
         if payload:
