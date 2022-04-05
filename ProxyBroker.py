@@ -177,7 +177,7 @@ class SockRelay(LogMixin):
 
 if __name__ == '__main__':
     proxy_server = SockRelay(
-        sockProxyAddr='localhost',
+        sockProxyAddr='192.168.3.124',
         sockProxyPort=9011,
         remoteAddr='192.168.3.131',
         remotePort=9190)
