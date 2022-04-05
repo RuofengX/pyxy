@@ -72,7 +72,10 @@ class Server(LogMixin):
             isClosed =True
             logger.warning(f'连接意外关闭 > {e}')
             return
-        
+        except ConnectionRefusedError as e:
+            isClose = True
+            logger.warning(f'连接被拒绝')
+            
         except Exception as e:
             logger.error(f"未知错误 > {type(e)} {e}")
 
