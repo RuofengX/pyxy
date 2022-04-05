@@ -29,6 +29,7 @@ class Server(LogMixin):
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
         self.connections += 1
+        self.logger.info(f'当前连接数：{self.connections}')  # TODO: FOR DEBUG
         requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
         isClosed = False
