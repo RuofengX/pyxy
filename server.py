@@ -11,6 +11,7 @@ class Server(LogMixin):
     def __init__(self, addr='0.0.0.0', port=9190):
         super().__init__()
         self.key = Key('1b94f71484d0488681ef7c9a625a2069')
+        self.connections = 0
         asyncio.run(self.start(addr=addr, port=port))
 
     async def start(self, addr: str, port):
@@ -22,6 +23,8 @@ class Server(LogMixin):
 
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
+        self.connections += 1
+        self.logger.info(f'当前连接数 > {self.connections}')
         requestId = shortuuid.ShortUUID().random(length=8).upper()
         logger = self.logger.getChild(f'{requestId}')
         isClosed = False
@@ -80,6 +83,7 @@ class Server(LogMixin):
                 logger.debug(f'请求处理结束')
             except Exception as e:
                 logger.warning(f'在关闭请求的过程中发生了其他错误 > {objstr(e)}')
+                self.connections -= 1
                 pass
 
     async def __exchangeBlock(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, payload: dict=None):
