@@ -175,5 +175,5 @@ if __name__ == '__main__':
     proxy_server = ClientBroker(
         sockProxyAddr='localhost',
         sockProxyPort=9011,
-        remoteAddr='localhost',
+        remoteAddr='192.168.3.131',
         remotePort=9190)

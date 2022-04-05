@@ -29,7 +29,7 @@ class Server(LogMixin):
             
             trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
 
-            logger.info(f'收到请求 > {trueIp}|{trueDomain}:{truePort}')
+            logger.debug(f'收到请求 > {trueIp}|{trueDomain}:{truePort}')
             
             if (not trueIp) and (not trueDomain):
                 logger.error(f'没有提供ip或domain')
