@@ -83,8 +83,9 @@ class Server(LogMixin):
                 logger.debug(f'请求处理结束')
             except Exception as e:
                 logger.warning(f'在关闭请求的过程中发生了其他错误 > {objstr(e)}')
-                self.connections -= 1
                 pass
+            finally:
+                self.connections -= 1
 
     async def __exchangeBlock(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, payload: dict=None):
         '''远程的连接预协商'''
