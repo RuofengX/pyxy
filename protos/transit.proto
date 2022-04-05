@@ -1,0 +1,50 @@
+// 文件位置：helloworld.proto
+
+syntax = "proto3";
+
+package pyxy;
+
+service SocketManager {
+    // 新建连接
+    rpc new(SocketReq) returns (SocketResp) {}
+
+    // 关闭连接
+    rpc close(SocketReq) returns (SocketResp) {}
+    
+    // 客户端发送字节数据
+    rpc send(stream SendReq) returns (SendResp) {}
+
+    // 客户端接受字节数据
+    rpc read(ReadReq) returns(stream ReadResp) {}
+}
+
+message SocketReq {
+    uint32 socketId = 1;  // 连接ID
+    uint32 ip = 2;  // 目标IP
+    string domain = 3;  // 目标域名
+    int32 port = 4; // 目标端口
+}
+
+message SocketResp {
+    uint32 socketId = 1;
+    uint32 addr = 2;
+    uint32 port = 3;
+}
+
+message SendReq {
+    uint32 socketId = 1;
+    bytes data = 2;
+}
+
+message SendResp {
+    uint32 socketId = 1;
+}
+
+message ReadReq {
+    uint32 socketId = 1;
+    bytes data = 2;
+}
+
+message ReadResp {  
+    bytes response = 1;
+}
