@@ -6,6 +6,7 @@ from SafeBlock import Block, Key, DecryptError
 import shortuuid
 import socket
 import sys
+import time
 
 class Server(LogMixin):
     def __init__(self, addr='0.0.0.0', port=9190):
@@ -14,18 +15,16 @@ class Server(LogMixin):
         self.connections = 0
         
         self.__count = 0
-        
-        asyncio.run(self.start(addr=addr, port=port))
+        asyncio.run(
+            self.start(addr=addr, port=port)
+            )
 
     async def start(self, addr: str, port):
         """异步入口函数"""
         server = await asyncio.start_server(self.handler, addr, 9190)
         self.logger.warning(f"服务器启动在{addr}:{port}")
-        async with server:
-            asyncio.gather(
-                server.serve_forever(),
-                self.logStatus()
-            )
+        async with server:  # 需要学习async with
+            await server.serve_forever()
 
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
@@ -91,13 +90,6 @@ class Server(LogMixin):
                 pass
             finally:
                 self.connections -= 1
-
-    async def logStatus(self):
-        """定时打印服务器状态"""
-        while True:
-            self.logger.info(f'当前连接数 > {self.connections}')
-            self.logger.info(f'已处理连接 > {self.__count}')
-            await asyncio.sleep(10)
         
     @property
     def requestCount(self):
