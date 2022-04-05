@@ -5,7 +5,7 @@ from aisle import LOG, LogMixin
 from SafeBlock import Block, Key, DecryptError
 import shortuuid
 import socket
-
+import sys
 
 class Server(LogMixin):
     def __init__(self, addr='0.0.0.0', port=9190):
@@ -22,12 +22,14 @@ class Server(LogMixin):
         server = await asyncio.start_server(self.handler, addr, 9190)
         self.logger.warning(f"服务器启动在{addr}:{port}")
         async with server:
-            await server.serve_forever()
+            asyncio.gather(
+                server.serve_forever(),
+                self.logStatus()
+            )
 
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
         self.connections += 1
-        self.logger.info(f'当前连接数 > {self.connections}')  # TODO: FOR DEBUG
         requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
         isClosed = False
@@ -90,6 +92,14 @@ class Server(LogMixin):
             finally:
                 self.connections -= 1
 
+    async def logStatus(self):
+        """定时打印服务器状态"""
+        while True:
+            self.logger.info(f'当前连接数 > {self.connections}')
+            self.logger.info(f'已处理连接 > {self.__count}')
+            self.logger.info(f'对象使用内存 > {sys.getsizeof(self)/1024.1024:.2f}MB')
+            await asyncio.sleep(10)
+        
     @property
     def requestCount(self):
         """返回该服务器处理的请求总量"""
