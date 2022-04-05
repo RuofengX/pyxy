@@ -155,18 +155,20 @@ class ClientBroker(LogMixin):
         except SocksError as e:
             logger.error(f'Socks错误 > {e}')
 
+        except OSError as e:
+            logger.error(f'OS错误 > {e}')
         except Exception as e:
             logger.error(f'未知错误 > {e}')
 
+            
         finally:
             try:
-                logger.info(f'关闭和远程的连接')
+                logger.info(f'关闭双向连接')
                 await remoteClient.remoteClose()
-                logger.info(f'关闭Socks连接')
                 writer.close()
                 await writer.wait_closed()
             except Exception as e:
-                logger.warning(f'意外错误 > {e}')
+                logger.warning(f'关闭连接时发生意外错误 > {e}')
             finally:
                 return
 
