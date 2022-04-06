@@ -32,7 +32,7 @@ class Server(LogMixin):
         self.renameLogger(f'Server-{addr}:{port}')
         server = await asyncio.start_server(self.handler, addr, 9190,
                                             ssl=self.safeContext)
-        self.logger.warning(f"服务器启动在{addr}:{port}")
+        self.logger.warning(f"Server starting at {addr}:{port}")
         async with server:  # 需要学习async with
             await server.serve_forever()
 
@@ -40,7 +40,7 @@ class Server(LogMixin):
         """处理请求，捕获所有的异常"""
         self.connections += 1
         # TODO: FOR DEBUG，需要单独做到线程中
-        self.logger.info(f'当前连接数：{self.connections}')
+        self.logger.info(f'Current connections number: {self.connections}')
         requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
         isClosed = False  # 标记连接是否已经关闭
@@ -52,13 +52,13 @@ class Server(LogMixin):
                 logger.info(f'收到请求 > {trueIp}|{trueDomain}:{truePort}')
 
                 if (not trueIp) and (not trueDomain):
-                    logger.error(f'没有提供ip或domain')
-                    raise ValueError('没有提供ip或domain')
+                    logger.error(f'NO IP OR DOMAIN')
+                    raise ValueError('NO IP OR DOMAIN')
 
                 if trueDomain:
                     trueIp = socket.gethostbyname(trueDomain)
 
-                logger.info(f'开始连接 > {trueIp}|{trueDomain}:{truePort}')
+                logger.info(f'Start true connect > {trueIp}|{trueDomain}:{truePort}')
 
                 trueReader, trueWriter = await asyncio.open_connection(trueIp, truePort)
 
@@ -66,8 +66,7 @@ class Server(LogMixin):
                 pass
 
             except Exception as e:
-                logger.warning(f'发生未捕获的错误，请与开发者联系')
-                logger.warning(f'建立真实连接时发生错误 > {type(e)}:{e}')
+                logger.warning(f'Unexpected error > {type(e)}:{e}')
                 bindAddress = ''
                 bindPort = 0
                 raise e
@@ -85,26 +84,26 @@ class Server(LogMixin):
             )
 
         except socket.gaierror as e:
-            logger.error(f'解析域名失败 > {e}')
+            logger.error(f'DNS failure > {e}')
 
         except ConnectionResetError as e:
             isClosed = True
-            logger.warning(f'连接意外关闭 > {e}')
+            logger.warning(f'Connection Reset > {e}')
             return
         except ConnectionRefusedError as e:
             isClosed = True
-            logger.warning(f'连接被拒绝')
-
-        except OSError as e:
-            isClosed = True
-            logger.warning(f'连接被拒绝 > {e}')
+            logger.warning(f'Connection Refused > {e}')
 
         except TimeoutError as e:
             isClosed = True
-            logger.warning(f'连接超时 > {e}')
+            logger.warning(f'Connection timeout > {e}')
             
+        except OSError as e:
+            isClosed = True
+            logger.warning(f'System fail connection > {e}')
+
         except Exception as e:
-            logger.error(f"未知错误 > {type(e)} {e}")
+            logger.error(f"Unkown error > {type(e)} {e}")
 
         finally:
             if isClosed:
@@ -116,12 +115,12 @@ class Server(LogMixin):
                 await writer.wait_closed()
                 logger.debug(f'请求处理结束')
             except Exception as e:
-                logger.warning(f'在关闭请求的过程中发生了其他错误 > {objstr(e)}')
+                logger.warning(f'Another error happened when closing connection > {objstr(e)}')
                 pass
             finally:
                 self.connections -= 1
                 # TODO: FOR DEBUG
-                self.logger.info(f'当前连接数：{self.connections}')
+                self.logger.info(f'Current connections number: {self.connections}')
 
     @property
     def requestCount(self):
