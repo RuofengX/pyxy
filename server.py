@@ -75,6 +75,10 @@ class Server(LogMixin):
         except ConnectionRefusedError as e:
             isClose = True
             logger.warning(f'连接被拒绝')
+        
+        except OSError as e:
+            isClose = True
+            logger.warning(f'连接被拒绝 > {e}')
             
         except Exception as e:
             logger.error(f"未知错误 > {type(e)} {e}")
@@ -158,8 +162,8 @@ class Server(LogMixin):
         while 1:
             data = await r.read(4096)  # 这里阻塞了，等待本地的数据
             if not data:
-                w.write_eof()
-                await w.drain()
+                w.close()
+                await w.wait_closed()
                 break
             
             w.write(data)
