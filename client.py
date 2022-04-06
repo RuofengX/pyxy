@@ -28,9 +28,12 @@ class Client(LogMixin):
             response = await self.__exchangeBlock(block.blockBytes)
             rtn = None
             responseBlock = Block.fromBytes(self.key, response)
-
-            self.logger.debug(f'预协商成功')
+            
             bindAddress, bindPort = responseBlock.payload['bindAddress'], responseBlock.payload['bindPort']
+            self.logger.debug(f'预协商成功')
+            if (bindAddress == '') or (bindPort == 0):
+                raise RemoteClientError('远程连接建立失败')
+            
             rtn = bindAddress, bindPort
             self.logger.debug(f'远程已创建连接，地址：{bindAddress}，端口：{bindPort}')
 

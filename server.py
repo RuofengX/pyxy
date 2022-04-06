@@ -34,24 +34,34 @@ class Server(LogMixin):
         logger = self.logger.getChild(f'{requestId}')
         isClosed = False
         try:
-            
-            trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
+            try:
+                """尝试建立真实连接"""
+                trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
+                
+                logger.info(f'收到请求 > {trueIp}|{trueDomain}:{truePort}')
+                
+                if (not trueIp) and (not trueDomain):
+                    logger.error(f'没有提供ip或domain')
+                    raise ValueError('没有提供ip或domain')
 
-            logger.debug(f'收到请求 > {trueIp}|{trueDomain}:{truePort}')
-            
-            if (not trueIp) and (not trueDomain):
-                logger.error(f'没有提供ip或domain')
-                raise ValueError('没有提供ip或domain')
+                if trueDomain:
+                    trueIp = socket.gethostbyname(trueDomain)
 
-            if trueDomain:
-                trueIp = socket.gethostbyname(trueDomain)
-
+                
+                logger.info(f'开始连接 > {trueIp}|{trueDomain}:{truePort}')
+                
+                trueReader, trueWriter = await asyncio.open_connection(trueIp, truePort)
+                
+                bindAddress, bindPort = trueWriter.get_extra_info('sockname')
+                pass
             
-            trueReader, trueWriter = await asyncio.open_connection(trueIp, truePort)
-            
-            bindAddress, bindPort = trueWriter.get_extra_info('sockname')
-            pass
-        
+            except Exception as e:
+                logger.warning(f'发生未捕获的错误，请与开发者联系')
+                logger.warning(f'建立真实连接时发生错误 > {type(e)}:{e}')
+                bindAddress = ''
+                bindPort = 0
+                raise e
+                
             await self.__exchangeBlock(reader, writer, {
                 'bindAddress': bindAddress,
                 'bindPort': bindPort

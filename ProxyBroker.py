@@ -94,7 +94,7 @@ class SockRelay(LogMixin):
             # request
             version, cmd, _, addressType = unpack("!BBBB", await reader.readexactly(4))
             assert version == SOCKS_VERSION, SocksError('不支持的Socks版本')
-
+          
             if addressType == 1:  # IPv4
                 trueDomain = ''
                 trueIpBytes = await reader.readexactly(4)
@@ -110,7 +110,8 @@ class SockRelay(LogMixin):
                 raise SocksError(f'不支持的地址类型{addressType}')
 
             truePort = unpack('!H', await reader.readexactly(2))[0]
-
+            logger.info(f'客户端请求 > {trueIp}|{trueDomain}:{truePort}')
+            
             # 在远程创建真实链接
             try:
                 remoteClient = Client(self.remoteAddr, self.remotePort, tag=requestId)
@@ -177,7 +178,8 @@ class SockRelay(LogMixin):
 
 if __name__ == '__main__':
     proxy_server = SockRelay(
-        sockProxyAddr='192.168.3.124',
+        sockProxyAddr='0.0.0.0',
         sockProxyPort=9011,
-        remoteAddr='192.168.3.131',
+        # remoteAddr='192.168.3.131',
+        remoteAddr='localhost',
         remotePort=9190)
