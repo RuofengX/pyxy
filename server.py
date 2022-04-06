@@ -189,7 +189,6 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(
         asyncio.gather(
-            serverIPv4.start('0.0.0.0', 9190),
-            serverIPv6.start('[::]', 9190)
+            serverIPv4.start('0.0.0.0', 9190)
         )
     )
