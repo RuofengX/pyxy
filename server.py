@@ -1,5 +1,6 @@
 # coding: utf-8
 import asyncio
+from sqlite3 import Time
 from objprint import objstr
 from aisle import LOG, LogMixin
 from SafeBlock import Block, Key, DecryptError
@@ -39,7 +40,7 @@ class Server(LogMixin):
         self.logger.info(f'当前连接数：{self.connections}')
         requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
-        isClosed = False
+        isClosed = False  # 标记连接是否已经关闭
         try:
             try:
                 """尝试建立真实连接"""
@@ -88,13 +89,17 @@ class Server(LogMixin):
             logger.warning(f'连接意外关闭 > {e}')
             return
         except ConnectionRefusedError as e:
-            isClose = True
+            isClosed = True
             logger.warning(f'连接被拒绝')
 
         except OSError as e:
-            isClose = True
+            isClosed = True
             logger.warning(f'连接被拒绝 > {e}')
 
+        except TimeoutError as e:
+            isClosed = True
+            logger.warning(f'连接超时 > {e}')
+            
         except Exception as e:
             logger.error(f"未知错误 > {type(e)} {e}")
 
