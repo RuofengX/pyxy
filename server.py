@@ -14,7 +14,10 @@ import ssl
 class Server(LogMixin):
     def __init__(self):
         super().__init__()
-        self.key = Key('1b94f71484d0488681ef7c9a625a2069')
+        with open('key', 'rt') as f:
+            keyStr = f.readline().strip()
+        keyStr = keyStr.replace('\n', '')
+        self.key = Key(keyStr)
         self.connections = 0
 
         self.__count = 0

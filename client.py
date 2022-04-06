@@ -17,7 +17,11 @@ class Client(LogMixin):
         if tag is not None:
             self.renameLogger(f'Client-{tag}')
         
-        self.key = Key('1b94f71484d0488681ef7c9a625a2069')
+        with open('key', 'rt') as f:
+            keyStr = f.readline().strip()
+        keyStr = keyStr.replace('\n', '')
+        
+        self.key = Key(keyStr)
         self.remoteAddr = remoteAddr
         self.remotePort = remotePort
 
