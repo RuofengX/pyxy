@@ -49,7 +49,7 @@ class Server(LogMixin):
                 """尝试建立真实连接"""
                 trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
 
-                logger.info(f'收到请求 > {trueIp}|{trueDomain}:{truePort}')
+                logger.info(f'Get request > {trueIp}|{trueDomain}:{truePort}')
 
                 if (not trueIp) and (not trueDomain):
                     logger.error(f'NO IP OR DOMAIN')
