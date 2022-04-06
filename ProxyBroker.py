@@ -31,6 +31,7 @@ class SockRelay(LogMixin):
 
     async def startSockServer(self) -> None:
         """启动Socks5服务器"""
+        # TODO: 给Socks连接也加上TLS加密
         server = await asyncio.start_server(
             self.localSockHandle, self.sockProxyAddr, self.sockProxyPort)
 
