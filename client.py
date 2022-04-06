@@ -70,7 +70,7 @@ class Client(LogMixin):
             return_exceptions=True
         )
         for r in result:
-            if not r is None:
+            if not r:
                 self.logger.warn(f'异步的数据交换返回了异常的结果 > {r}')
             
         self.logger.debug(f'双向流均已关闭')
