@@ -181,5 +181,5 @@ if __name__ == '__main__':
         sockProxyAddr='0.0.0.0',
         sockProxyPort=9011,
         # remoteAddr='192.168.3.131',
-        remoteAddr='localhost',
+        remoteAddr='pyxy.s-2.link',
         remotePort=9190)

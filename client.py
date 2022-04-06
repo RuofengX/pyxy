@@ -92,7 +92,8 @@ class Client(LogMixin):
 
     async def __connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         return await asyncio.open_connection(
-            self.remoteAddr, self.remotePort)
+            self.remoteAddr, self.remotePort,
+            ssl=True)
 
     async def __copy(self, r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
         """将r中的数据写入w"""
