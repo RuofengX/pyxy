@@ -9,7 +9,7 @@ def sockResuestTest():
     s = socks.socksocket()
     
     s.set_proxy(socks.SOCKS5, 'localhost', 9011, username='username', password='password')
-    s.connect(('www.baidu.com', 80))
+    s.connect(('www.google.com', 80))
     s.sendall(b'HEAD / HTTP/1.1\r\nHost: www.baidu.com\r\n\r\n')
     
     response = b''
