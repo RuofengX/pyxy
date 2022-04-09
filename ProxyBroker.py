@@ -129,24 +129,20 @@ class SockRelay(LogMixin):
             logger.info(f'客户端请求 > {trueIp}|{trueDomain}:{truePort}')
             
             # 在远程创建真实链接
-            try:
-                remoteClient = Client(self.remoteAddr, self.remotePort, tag=requestId)
-                response = await remoteClient.remoteHandshake(payload={
-                    'ip': trueIp,
-                    'domain': trueDomain,
-                    'port': truePort
-                }
-                )
-                if not response is None:
-                    bindAddress, bindPort = response
-                else:
-                    raise RemoteClientError('远程服务器返回错误')
-                bindAddressBytes = socket.inet_aton(bindAddress)
-                bindAddressInt = unpack('!I', bindAddressBytes)[0]
-                
-            except Exception as e:
-                logger.error(f'远程创建连接失败 > {e}')
-                raise e
+            remoteClient = Client(self.remoteAddr, self.remotePort, tag=requestId)
+            response = await remoteClient.remoteHandshake(payload={
+                'ip': trueIp,
+                'domain': trueDomain,
+                'port': truePort
+            }
+            )
+            if not response is None:
+                bindAddress, bindPort = response
+            else:
+                raise RemoteClientError('远程服务器返回错误')
+            bindAddressBytes = socket.inet_aton(bindAddress)
+            bindAddressInt = unpack('!I', bindAddressBytes)[0]
+            
 
             # 对Socks客户端响应连接的结果
             reply = pack("!BBBBIH", SOCKS_VERSION, 0,
@@ -159,6 +155,8 @@ class SockRelay(LogMixin):
                 await remoteClient.exchangeStream(reader, writer, remoteClient.remoteReader, remoteClient.remoteWriter)
 
             
+        except RemoteClientError as e:
+            logger.warning(f'远程创建连接失败 > {e}')
             
         except SocksError as e:
             logger.warning(f'Socks错误 > {e}')
@@ -172,15 +170,20 @@ class SockRelay(LogMixin):
             
         finally:
             try:
-                await remoteClient.remoteClose()
                 writer.close()
                 await writer.wait_closed()
             except Exception as e:
-                logger.debug(f'关闭连接失败 > {e}')
-            finally:
-                logger.info(f'请求处理结束')
-                gc.collect()
-                return
+                logger.debug(f'关闭本地连接失败 > {e}')
+                
+            try:
+                await remoteClient.remoteClose()
+            except Exception as e:
+                logger.debug(f'关闭远程连接失败 > {e}')
+                
+            """收尾工作"""
+            logger.info(f'请求处理结束')
+            gc.collect()
+            return
 
 
 if __name__ == '__main__':

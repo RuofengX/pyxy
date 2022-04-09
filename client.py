@@ -46,21 +46,21 @@ class Client(StreamBase):
             bindAddress, bindPort = responseBlock.payload['bindAddress'], responseBlock.payload['bindPort']
             self.logger.debug(f'预协商成功')
             if (bindAddress == '') or (bindPort == 0):
-                raise RemoteClientError('远程连接建立失败')
+                raise RemoteClientError('远程的连接建立失败')
             
             rtn = bindAddress, bindPort
             self.logger.debug(f'远程已创建连接，地址：{bindAddress}，端口：{bindPort}')
 
         except ConnectionResetError as e:
-            self.logger.error(f'远程连接关闭')
+            self.logger.debug(f'远程连接关闭')
             await self.remoteClose()
 
         except DecryptError as e:
-            self.logger.error(f'预协商解密时发生错误{e}')
+            self.logger.debug(f'预协商解密时发生错误 {e}')
             await self.remoteClose()
 
         except Exception as e:
-            self.logger.error(f'预协商时发生错误{e}')
+            self.logger.debug(f'{e}')
             await self.remoteClose()
 
         finally:
@@ -70,7 +70,7 @@ class Client(StreamBase):
 
     async def remoteClose(self) -> None:
         if not self.remoteWriter:
-            self.logger.error('无法关闭一个不存在的远程连接')
+            self.logger.warning('无法关闭一个不存在的远程连接')
             return
         self.remoteWriter.close()
         await self.remoteWriter.wait_closed()

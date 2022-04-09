@@ -44,23 +44,25 @@ class Server(StreamBase):
         self.logger.info(f'Current connections number: {self.connections}')
         requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
-        isClosed = False  # 标记连接是否已经关闭
         try:
+            """请求处理主体"""
+            
+            # 1. 预协商
+            trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
+            logger.info(f'Get request > {trueIp}|{trueDomain}:{truePort}')
+
+            # 2. 格式化目标地址
+            if (not trueIp) and (not trueDomain):
+                logger.error(f'NO IP OR DOMAIN')
+                raise ValueError('NO IP OR DOMAIN')
+
+            if trueDomain:
+                trueIp = socket.gethostbyname(trueDomain)
+            logger.info(f'Start true connect > {trueIp}|{trueDomain}:{truePort}')
+
+
+            # 3. 尝试建立真实连接
             try:
-                """尝试建立真实连接"""
-                trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
-
-                logger.info(f'Get request > {trueIp}|{trueDomain}:{truePort}')
-
-                if (not trueIp) and (not trueDomain):
-                    logger.error(f'NO IP OR DOMAIN')
-                    raise ValueError('NO IP OR DOMAIN')
-
-                if trueDomain:
-                    trueIp = socket.gethostbyname(trueDomain)
-
-                logger.info(f'Start true connect > {trueIp}|{trueDomain}:{truePort}')
-
                 trueReader, trueWriter = await asyncio.open_connection(trueIp, truePort)
 
                 bindAddress, bindPort = trueWriter.get_extra_info('sockname')
@@ -71,12 +73,13 @@ class Server(StreamBase):
                 bindAddress = ''
                 bindPort = 0
                 raise e
+            finally:
+                await self.__exchangeBlock(reader, writer, {
+                    'bindAddress': bindAddress,
+                    'bindPort': bindPort
+                })
 
-            await self.__exchangeBlock(reader, writer, {
-                'bindAddress': bindAddress,
-                'bindPort': bindPort
-            })
-
+            # 4. 开始转发
             await self.exchangeStream(
                 reader,
                 writer,
@@ -84,44 +87,46 @@ class Server(StreamBase):
                 trueWriter
             )
 
+        # 全部流程的异常处理
         except socket.gaierror as e:
             logger.error(f'DNS failure > {e}')
 
         except ConnectionResetError as e:
-            isClosed = True
             logger.warning(f'Connection Reset > {e}')
             return
         except ConnectionRefusedError as e:
-            isClosed = True
             logger.warning(f'Connection Refused > {e}')
 
         except TimeoutError as e:
-            isClosed = True
             logger.warning(f'Connection timeout > {e}')
             
         except OSError as e:
-            isClosed = True
             logger.warning(f'System fail connection > {e}')
 
         except Exception as e:
             logger.error(f"Unkown error > {type(e)} {e}")
 
         finally:
-            if isClosed:
-                logger.debug(f'请求处理结束')
-                return
             try:
-                logger.debug(f'尝试关闭请求')
+                """尝试关闭和客户端的连接"""
                 writer.close()
                 await writer.wait_closed()
-                logger.debug(f'请求处理结束')
             except Exception as e:
-                logger.warning(f'Another error happened when closing connection > {objstr(e)}')
+                self.logger.debug(f'Close client connection error > {type(e)}:{e}')
                 pass
-            finally:
-                self.connections -= 1
-                # TODO: FOR DEBUG
-                # self.logger.info(f'Current connections number: {self.connections}')
+            try:
+                """尝试关闭真实连接"""
+                trueWriter.close()
+                await trueWriter.wait_closed()
+            except Exception as e:
+                self.logger.debug(f'Close true connection error > {type(e)}:{e}')
+                pass
+            
+            """收尾工作"""
+            logger.debug(f'Request Handle End')
+            self.connections -= 1
+            self.logger.info(f'Current connections number: {self.connections}')
+            return
 
     @property
     def requestCount(self):
