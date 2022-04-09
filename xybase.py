@@ -1,11 +1,17 @@
 from aisle import LogMixin
 import asyncio
 import os
-
+from SafeBlock import Key
 
 class StreamBase(LogMixin):
     def __init__(self, *args, **kwargs):
-        os.environ['PYPY_GC_MAX'] = '256MB'
+        
+        with open('key', 'rt') as f:
+            keyStr = f.readline().strip()
+        keyStr = keyStr.replace('\n', '')
+        
+        self.key = Key(keyStr)
+        
         super().__init__(*args, **kwargs)
 
     async def exchangeStream(self,

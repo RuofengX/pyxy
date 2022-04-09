@@ -20,11 +20,6 @@ class Client(StreamBase):
         if tag is not None:
             self.renameLogger(f'Client-{tag}')
         
-        with open('key', 'rt') as f:
-            keyStr = f.readline().strip()
-        keyStr = keyStr.replace('\n', '')
-        
-        self.key = Key(keyStr)
         self.remoteAddr = remoteAddr
         self.remotePort = remotePort
 

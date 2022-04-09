@@ -15,10 +15,6 @@ import ssl
 class Server(StreamBase):
     def __init__(self):
         super().__init__()
-        with open('key', 'rt') as f:
-            keyStr = f.readline().strip()
-        keyStr = keyStr.replace('\n', '')
-        self.key = Key(keyStr)
         self.connections = 0
 
         self.__count = 0
