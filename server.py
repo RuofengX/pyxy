@@ -7,6 +7,7 @@ from SafeBlock import Block, Key, DecryptError
 from xybase import StreamBase
 import socket
 import ssl
+import gc
 
 
 class Server(StreamBase):
@@ -117,8 +118,9 @@ class Server(StreamBase):
                     f'Close true connection error > {type(e)}:{e}')
                 pass
 
-            """收尾工作"""
+            """收尾工作"""       
             logger.debug(f'Request Handle End')
+            gc.collect()
             self.connections -= 1
             self.logger.info(f'Current connections number: {self.connections}')
             return
