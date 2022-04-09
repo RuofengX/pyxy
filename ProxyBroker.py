@@ -10,7 +10,7 @@ import shortuuid
 import copy
 import sys
 
-from memory_profiler import profile
+# from memory_profiler import profile
 
 class SocksError(Exception):
     pass
