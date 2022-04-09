@@ -5,6 +5,9 @@ from SafeBlock import Key, Block, DecryptError
 from aisle import LOG, LogMixin
 from xybase import StreamBase
 import copy
+from memory_profiler import profile
+import sys
+
 
 class RemoteClientError(Exception):
     pass
@@ -26,11 +29,17 @@ class Client(StreamBase):
         self.remoteAddr = remoteAddr
         self.remotePort = remotePort
 
+    # HACK: 需要优化内存，减小长连接的内存占用
     async def remoteHandshake(self, payload: dict) -> tuple:
         '''打开一个连接之前的预协商'''
         try:
             with Block(self.key, payload) as block:
                 response = await self.__exchangeBlock(copy.copy(block.blockBytes))
+            
+            # block = Block(self.key, payload)
+            # response = await self.__exchangeBlock(copy.copy(block.blockBytes))
+            # del block
+            
             rtn = None
             responseBlock = Block.fromBytes(self.key, response)
             
@@ -58,25 +67,6 @@ class Client(StreamBase):
             """不关闭连接"""
             return rtn
 
-    async def remoteExchangeStream(self, localReader: asyncio.StreamReader, localWriter: StreamWriter) -> None:
-        """和远程交换流上的数据"""
-        
-        if not self.remoteWriter:
-            self.logger.error('远程连接提前关闭')
-            return
-        
-        result = await asyncio.gather(
-            self.copy(localReader, self.remoteWriter),
-            self.copy(self.remoteReader, localWriter),
-            return_exceptions=True
-        )
-        for r in result:
-            if not r:
-                if r is not None:
-                    self.logger.warn(f'异步的数据交换返回了异常的结果 > {r}')
-            
-        self.logger.debug(f'双向流均已关闭')
-        await self.remoteClose()
 
     async def remoteClose(self) -> None:
         if not self.remoteWriter:

@@ -8,12 +8,13 @@ import time
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import copy
-
+from memory_profiler import profile
 
 # debug
-from pympler import asizeof 
-import sys
-from objprint import op
+# from pympler import asizeof 
+# import sys
+# from objprint import op
+
 
 class Key():
     """用来加解密的key
@@ -26,6 +27,7 @@ class Key():
         self: 一个16位比特串
     """
     __slots__ = '_keyBytes'
+    
     
     def __init__(self, keyString: str='') -> None:
         if not keyString:
@@ -58,6 +60,8 @@ class Key():
 
 class Cryptor():
     __slots__ = ['cipher', 'blockSize']
+    
+    
     def __init__(self, keyBytes: bytes) -> None:
         super().__init__()
         now = time.time()
@@ -104,6 +108,7 @@ class Block():
         
         return rtn
 
+    
     def __init__(self, key: Key, payload: dict = {}) -> None:
         """安全区块构造函数"""
         super().__init__()
@@ -127,8 +132,8 @@ class Block():
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        """不做任何事"""
-        pass
+        """减小内存消耗"""
+        del self
         
     @property
     def __ukpt(self) -> dict:
@@ -148,11 +153,14 @@ class DecryptError(Exception):
     """解密错误"""
     pass
 
-if __name__ == '__main__':
+
+def test():
     key = Key()
     LOG.info(key.keyBytes)
     blk = Block(key, {'a': 1})
     print(blk.blockBytes)
     blk2 = Block.fromBytes(key, blk.blockBytes)
-    print(sys.getsizeof(blk2))
     pass
+    
+if __name__ == '__main__':
+    test()

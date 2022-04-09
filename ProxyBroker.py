@@ -1,4 +1,5 @@
 from cmath import isclose
+import gc
 import socket
 from client import Client, RemoteClientError
 from pyxy import SOCKS_VERSION
@@ -7,7 +8,9 @@ from struct import pack, unpack
 import asyncio
 import shortuuid
 import copy
-import gc
+import sys
+
+from memory_profiler import profile
 
 class SocksError(Exception):
     pass
@@ -30,28 +33,34 @@ class SockRelay(LogMixin):
         self.remoteAddr = remoteAddr
         self.remotePort = remotePort
         super().__init__()
-        asyncio.run(self.startSockServer())
-        
-        
+        # self.run()
+    
+    def run(self):
+        try:
+            asyncio.run(self.startSockServer())
+        except KeyboardInterrupt:
+            return
+            
     async def startSockServer(self) -> None:
         """启动Socks5服务器"""
         # TODO: 给Socks连接也加上TLS加密
         
         server = await asyncio.start_server(
             self.localSockHandle, self.sockProxyAddr, self.sockProxyPort,
-            backlog=100)
+            backlog=1000)
 
         addr = server.sockets[0].getsockname()
         self.logger.info(f'服务器启动, 端口:{addr[1]}')
 
         async with server:
             await server.serve_forever()
-
+            
+            
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
         requestId = shortuuid.ShortUUID().random(length=8).upper()
         logger = self.logger.getChild(f'{requestId}')
-        logger.info(f'接收来自{writer.get_extra_info("peername")}的连接')
+        logger.debug(f'接收来自{writer.get_extra_info("peername")}的连接')
         try:
             # Socks5参考文献
             # [RFC1928](https://www.quarkay.com/code/383/socks5-protocol-rfc-chinese-traslation )
@@ -147,38 +156,30 @@ class SockRelay(LogMixin):
 
             # 建立数据交换
             if reply[1] == 0 and cmd == 1:
-                try:
-                    await remoteClient.remoteExchangeStream(reader, writer)
-                except ConnectionResetError:
-                    """
-                    ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
-                    应该是数据传回客户端中出现异常
-                    """
-                    logger.info('客户端关闭了连接')
+                await remoteClient.exchangeStream(reader, writer, remoteClient.remoteReader, remoteClient.remoteWriter)
 
-            # 关闭连接
-            writer.close()
-            await writer.wait_closed()
+            
             
         except SocksError as e:
-            logger.waring(f'Socks错误 > {e}')
+            logger.warning(f'Socks错误 > {e}')
 
         except OSError as e:
-            logger.waring(f'OS错误 > {e}')
+            logger.warning(f'OS错误 > {e}')
             
         except Exception as e:
-            logger.waring(f'未知错误 > {e}')
+            logger.warning(f'未知错误 > {e}')
 
             
         finally:
             try:
-                logger.info(f'关闭双向连接')
                 await remoteClient.remoteClose()
                 writer.close()
                 await writer.wait_closed()
             except Exception as e:
-                logger.warning(f'连接已断开 > {e}')
+                logger.debug(f'关闭连接失败 > {e}')
             finally:
+                logger.info(f'请求处理结束')
+                gc.collect()
                 return
 
 
@@ -189,3 +190,5 @@ if __name__ == '__main__':
         # remoteAddr='192.168.3.131',
         remoteAddr='pyxy.s-2.link',
         remotePort=9190)
+    proxy_server.run()
+    

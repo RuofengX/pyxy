@@ -77,11 +77,11 @@ class Server(StreamBase):
                 'bindPort': bindPort
             })
 
-            await self.__remoteExchangeStream(
-                lr=reader,
-                lw=writer,
-                rr=trueReader,
-                rw=trueWriter
+            await self.exchangeStream(
+                reader,
+                writer,
+                trueReader,
+                trueWriter
             )
 
         except socket.gaierror as e:
@@ -121,7 +121,7 @@ class Server(StreamBase):
             finally:
                 self.connections -= 1
                 # TODO: FOR DEBUG
-                self.logger.info(f'Current connections number: {self.connections}')
+                # self.logger.info(f'Current connections number: {self.connections}')
 
     @property
     def requestCount(self):
@@ -162,20 +162,6 @@ class Server(StreamBase):
                 # self.logger.error(f'预协商失败, {e}')
                 raise e
 
-    async def __remoteExchangeStream(self,
-                                     lr: asyncio.StreamReader,
-                                     lw: asyncio.StreamWriter,
-                                     rr: asyncio.StreamReader,
-                                     rw: asyncio.StreamWriter
-                                     ):
-        await asyncio.gather(
-            self.copy(lr, rw),
-            self.copy(rr, lw))
-
-        lw.close()
-        rw.close()
-        await lw.wait_closed()
-        await rw.wait_closed()
 
 
 
