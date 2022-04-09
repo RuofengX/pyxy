@@ -5,10 +5,7 @@ from objprint import objstr
 from aisle import LOG, LogMixin
 from SafeBlock import Block, Key, DecryptError
 from xybase import StreamBase
-import shortuuid
 import socket
-import sys
-import time
 import ssl
 
 
@@ -42,7 +39,7 @@ class Server(StreamBase):
         logger = self.logger.getChild(f'{requestId}')
         try:
             """请求处理主体"""
-            
+
             # 1. 预协商
             trueIp, trueDomain, truePort = await self.__exchangeBlock(reader, writer)
             logger.info(f'Get request > {trueIp}|{trueDomain}:{truePort}')
@@ -54,8 +51,8 @@ class Server(StreamBase):
 
             if trueDomain:
                 trueIp = socket.gethostbyname(trueDomain)
-            logger.info(f'Start true connect > {trueIp}|{trueDomain}:{truePort}')
-
+            logger.info(
+                f'Start true connect > {trueIp}|{trueDomain}:{truePort}')
 
             # 3. 尝试建立真实连接
             try:
@@ -95,7 +92,7 @@ class Server(StreamBase):
 
         except TimeoutError as e:
             logger.warning(f'Connection timeout > {e}')
-            
+
         except OSError as e:
             logger.warning(f'System fail connection > {e}')
 
@@ -108,16 +105,18 @@ class Server(StreamBase):
                 writer.close()
                 await writer.wait_closed()
             except Exception as e:
-                self.logger.debug(f'Close client connection error > {type(e)}:{e}')
+                self.logger.debug(
+                    f'Close client connection error > {type(e)}:{e}')
                 pass
             try:
                 """尝试关闭真实连接"""
                 trueWriter.close()
                 await trueWriter.wait_closed()
             except Exception as e:
-                self.logger.debug(f'Close true connection error > {type(e)}:{e}')
+                self.logger.debug(
+                    f'Close true connection error > {type(e)}:{e}')
                 pass
-            
+
             """收尾工作"""
             logger.debug(f'Request Handle End')
             self.connections -= 1
@@ -162,8 +161,6 @@ class Server(StreamBase):
             except Exception as e:
                 # self.logger.error(f'预协商失败, {e}')
                 raise e
-
-
 
 
 if __name__ == '__main__':

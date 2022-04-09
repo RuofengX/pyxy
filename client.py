@@ -1,11 +1,9 @@
 from codecs import StreamWriter
 import asyncio
 from typing import Tuple
-from SafeBlock import Key, Block, DecryptError
-from aisle import LOG, LogMixin
+from SafeBlock import Block, DecryptError
 from xybase import StreamBase
 import copy
-import sys
 
 
 class RemoteClientError(Exception):
@@ -15,11 +13,11 @@ class RemoteClientError(Exception):
 class Client(StreamBase):
     """维护和远程的连接"""
 
-    def __init__(self, remoteAddr: str = 'localhost', remotePort: int = 9190, tag:str=None) -> None:
+    def __init__(self, remoteAddr: str = 'localhost', remotePort: int = 9190, tag: str = None) -> None:
         super().__init__()
         if tag is not None:
             self.renameLogger(f'Client-{tag}')
-        
+
         self.remoteAddr = remoteAddr
         self.remotePort = remotePort
 
@@ -29,19 +27,19 @@ class Client(StreamBase):
         try:
             with Block(self.key, payload) as block:
                 response = await self.__exchangeBlock(copy.copy(block.blockBytes))
-            
+
             # block = Block(self.key, payload)
             # response = await self.__exchangeBlock(copy.copy(block.blockBytes))
             # del block
-            
+
             rtn = None
             responseBlock = Block.fromBytes(self.key, response)
-            
+
             bindAddress, bindPort = responseBlock.payload['bindAddress'], responseBlock.payload['bindPort']
             self.logger.debug(f'预协商成功')
             if (bindAddress == '') or (bindPort == 0):
                 raise RemoteClientError('远程的连接建立失败')
-            
+
             rtn = bindAddress, bindPort
             self.logger.debug(f'远程已创建连接，地址：{bindAddress}，端口：{bindPort}')
 
@@ -60,7 +58,6 @@ class Client(StreamBase):
         finally:
             """不关闭连接"""
             return rtn
-
 
     async def remoteClose(self) -> None:
         if not self.remoteWriter:
@@ -84,7 +81,6 @@ class Client(StreamBase):
         return await asyncio.open_connection(
             self.remoteAddr, self.remotePort,
             ssl=True)
-
 
 
 if __name__ == '__main__':

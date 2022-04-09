@@ -1,6 +1,5 @@
 from aisle import LogMixin
 import asyncio
-import os
 from SafeBlock import Key
 
 class StreamBase(LogMixin):
