@@ -4,6 +4,7 @@ from typing import Tuple
 from SafeBlock import Key, Block, DecryptError
 from aisle import LOG, LogMixin
 from xybase import StreamBase
+import copy
 
 class RemoteClientError(Exception):
     pass
@@ -27,9 +28,9 @@ class Client(StreamBase):
 
     async def remoteHandshake(self, payload: dict) -> tuple:
         '''打开一个连接之前的预协商'''
-        block = Block(self.key, payload)
         try:
-            response = await self.__exchangeBlock(block.blockBytes)
+            with Block(self.key, payload) as block:
+                response = await self.__exchangeBlock(copy.copy(block.blockBytes))
             rtn = None
             responseBlock = Block.fromBytes(self.key, response)
             

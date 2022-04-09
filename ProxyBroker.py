@@ -1,3 +1,4 @@
+from cmath import isclose
 import socket
 from client import Client, RemoteClientError
 from pyxy import SOCKS_VERSION
@@ -5,7 +6,8 @@ from aisle import LogMixin
 from struct import pack, unpack
 import asyncio
 import shortuuid
-
+import copy
+import gc
 
 class SocksError(Exception):
     pass
@@ -29,14 +31,15 @@ class SockRelay(LogMixin):
         self.remotePort = remotePort
         super().__init__()
         asyncio.run(self.startSockServer())
-
+        
+        
     async def startSockServer(self) -> None:
         """启动Socks5服务器"""
         # TODO: 给Socks连接也加上TLS加密
         
-        # self._pool = ProcessPoolExecutor(max_workers=10)
         server = await asyncio.start_server(
-            self.localSockHandle, self.sockProxyAddr, self.sockProxyPort)
+            self.localSockHandle, self.sockProxyAddr, self.sockProxyPort,
+            backlog=100)
 
         addr = server.sockets[0].getsockname()
         self.logger.info(f'服务器启动, 端口:{addr[1]}')
@@ -44,7 +47,6 @@ class SockRelay(LogMixin):
         async with server:
             await server.serve_forever()
 
-        
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
         requestId = shortuuid.ShortUUID().random(length=8).upper()
@@ -159,14 +161,13 @@ class SockRelay(LogMixin):
             await writer.wait_closed()
             
         except SocksError as e:
-            logger.error(f'Socks错误 > {e}')
+            logger.waring(f'Socks错误 > {e}')
 
         except OSError as e:
-            
-            logger.error(f'OS错误 > {e}')
+            logger.waring(f'OS错误 > {e}')
             
         except Exception as e:
-            logger.error(f'未知错误 > {e}')
+            logger.waring(f'未知错误 > {e}')
 
             
         finally:
@@ -176,7 +177,7 @@ class SockRelay(LogMixin):
                 writer.close()
                 await writer.wait_closed()
             except Exception as e:
-                logger.warning(f'关闭连接时发生意外错误 > {e}')
+                logger.warning(f'连接已断开 > {e}')
             finally:
                 return
 

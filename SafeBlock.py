@@ -1,3 +1,4 @@
+from tarfile import BLKTYPE
 from typing import Any
 from aisle import LogMixin, LOG
 import uuid
@@ -6,6 +7,13 @@ import random
 import time
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+import copy
+
+
+# debug
+from pympler import asizeof 
+import sys
+from objprint import op
 
 class Key():
     """用来加解密的key
@@ -17,30 +25,42 @@ class Key():
     Returns:
         self: 一个16位比特串
     """
-
+    __slots__ = '_keyBytes'
+    
     def __init__(self, keyString: str='') -> None:
         if not keyString:
             keyString = str(uuid.uuid4().hex)
-        self.keyString = keyString
         self.keyBytes = keyString.encode('utf-8')
+        pass
             
     @property
-    def keyBytes(self):
-        return self._keyValue
+    def keyBytes(self) -> bytes:
+        return self._keyBytes
 
     @keyBytes.setter
-    def keyBytes(self, value):
+    def keyBytes(self, value: bytes):
         if not isinstance(value, bytes):
             raise TypeError('key must be bytes')
         elif len(value) != 32:
             raise ValueError('key must be 32 bytes')
         else:
-            self._keyValue = value
+            self._keyBytes = value
+            
+    @property
+    def keyString(self) -> str:
+        return str(self.keyBytes)
+
+    @keyString.setter
+    def keyString(self, value: str):
+        self.keyBytes = value.encode('utf-8')
+            
 
 
-class Cryptor(LogMixin):
+class Cryptor():
+    __slots__ = ['cipher', 'blockSize']
     def __init__(self, keyBytes: bytes) -> None:
         super().__init__()
+        now = time.time()
         self.cipher = AES.new(keyBytes, AES.MODE_ECB)
         self.blockSize = 32
 
@@ -53,14 +73,14 @@ class Cryptor(LogMixin):
             return unpad(self.cipher.decrypt(b), self.blockSize)
         except ValueError:
             """解密错误，解密失败"""
-            self.logger.warning('解密错误，解密失败')
             raise DecryptError('解密错误')
 
 
-class Block(LogMixin):
+class Block():
     """安全区块
     """
-
+    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_Block__crpto'
+    
     @classmethod
     def fromBytes(cls, key: Key, b: bytes) -> 'Block':
         """解密字节串并转换为Block对象
@@ -87,21 +107,29 @@ class Block(LogMixin):
     def __init__(self, key: Key, payload: dict = {}) -> None:
         """安全区块构造函数"""
         super().__init__()
-
-        # 三个参数（简称ukp）都会加密
+        
+        # 四个参数（简称ukpt）都会加密
         self.uuid = uuid.uuid4().hex
         self.key = key.keyString
         self.payload = payload
         self.timestamp = int(time.time())
-
-        self.__bytesBuffer = None  # 缓存解密结果提高性能
         self.__crpto = Cryptor(key.keyBytes)
+        pass
     
-    # TODO: 需要兼容多进程
-    def __setattr__(self, __name: str, __value: Any) -> None:
-        self.__dict__['__bytesBuffer'] = None  # 刷新缓存
-        return super().__setattr__(__name, __value)
-
+    @property
+    def blockBytes(self) -> bytes:
+        """自我加密后，返回ukp的字节串"""
+        rtn = self.__crpto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
+        return rtn
+    
+    def __enter__(self) -> 'Block':
+        """返回自身"""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """不做任何事"""
+        pass
+        
     @property
     def __ukpt(self) -> dict:
         # ukpt取首字母
@@ -113,15 +141,7 @@ class Block(LogMixin):
             
         }
 
-    @property
-    def blockBytes(self) -> bytes:
-        """自我加密后，返回ukp的字节串"""
-        if not self.__bytesBuffer:
-            jsondumps = json.dumps(self.__ukpt)
-            bBlock = jsondumps.encode('utf-8')
-            
-            self.__bytesBuffer = self.__crpto.encrypt(bBlock)
-        return self.__bytesBuffer
+        
 
 
 class DecryptError(Exception):
@@ -131,4 +151,8 @@ class DecryptError(Exception):
 if __name__ == '__main__':
     key = Key()
     LOG.info(key.keyBytes)
-    
+    blk = Block(key, {'a': 1})
+    print(blk.blockBytes)
+    blk2 = Block.fromBytes(key, blk.blockBytes)
+    print(sys.getsizeof(blk2))
+    pass

@@ -17,7 +17,8 @@ class StreamBase(LogMixin):
                 w.write(data)
                 await w.drain()
             except Exception as e:
-                self.logger.warning(f'远程连接关闭 {e}')
+                self.logger.debug(f'远程连接断开 {e}')
                 break
+            
             
         return
