@@ -6,6 +6,7 @@ from struct import pack, unpack
 import asyncio
 import shortuuid
 
+
 class SocksError(Exception):
     pass
 
@@ -32,6 +33,8 @@ class SockRelay(LogMixin):
     async def startSockServer(self) -> None:
         """启动Socks5服务器"""
         # TODO: 给Socks连接也加上TLS加密
+        
+        # self._pool = ProcessPoolExecutor(max_workers=10)
         server = await asyncio.start_server(
             self.localSockHandle, self.sockProxyAddr, self.sockProxyPort)
 
@@ -41,6 +44,7 @@ class SockRelay(LogMixin):
         async with server:
             await server.serve_forever()
 
+        
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
         requestId = shortuuid.ShortUUID().random(length=8).upper()

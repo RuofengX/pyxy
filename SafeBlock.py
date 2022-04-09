@@ -38,7 +38,7 @@ class Key():
             self._keyValue = value
 
 
-class Crypto(LogMixin):
+class Cryptor(LogMixin):
     def __init__(self, keyBytes: bytes) -> None:
         super().__init__()
         self.cipher = AES.new(keyBytes, AES.MODE_ECB)
@@ -71,15 +71,17 @@ class Block(LogMixin):
         Raises:
             DecryptError: 解密错误，解密失败
         """
-        crpto = Crypto(key.keyBytes)
+        crpto = Cryptor(key.keyBytes)
         rebuildDict = json.loads(crpto.decrypt(b).decode('utf-8'))
-        rtn = cls(key, {})  # 创建空对象
-        rtn.uuid = rebuildDict['uuid']  # 强制重载
-        rtn.payload = rebuildDict['payload']  # 强制重载
-        vTime = rebuildDict['timestamp'] - int(time.time())
+        vTime = rebuildDict['timestamp'] - int(time.time())  # 验证时间是否大于10秒
         if vTime >= 10:
             raise DecryptError('时间戳误差大于10秒')
+        
+        rtn = cls(key, {})  # 创建空的Block对象
+        rtn.uuid = rebuildDict['uuid']  # 强制重载
+        rtn.payload = rebuildDict['payload']  # 强制重载
         rtn.timestamp = rebuildDict['timestamp']
+        
         return rtn
 
     def __init__(self, key: Key, payload: dict = {}) -> None:
@@ -93,7 +95,7 @@ class Block(LogMixin):
         self.timestamp = int(time.time())
 
         self.__bytesBuffer = None  # 缓存解密结果提高性能
-        self.__crpto = Crypto(key.keyBytes)
+        self.__crpto = Cryptor(key.keyBytes)
     
     # TODO: 需要兼容多进程
     def __setattr__(self, __name: str, __value: Any) -> None:
@@ -117,6 +119,7 @@ class Block(LogMixin):
         if not self.__bytesBuffer:
             jsondumps = json.dumps(self.__ukpt)
             bBlock = jsondumps.encode('utf-8')
+            
             self.__bytesBuffer = self.__crpto.encrypt(bBlock)
         return self.__bytesBuffer
 

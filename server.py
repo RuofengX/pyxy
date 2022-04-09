@@ -4,6 +4,7 @@ from sqlite3 import Time
 from objprint import objstr
 from aisle import LOG, LogMixin
 from SafeBlock import Block, Key, DecryptError
+from xybase import StreamBase
 import shortuuid
 import socket
 import sys
@@ -11,7 +12,7 @@ import time
 import ssl
 
 
-class Server(LogMixin):
+class Server(StreamBase):
     def __init__(self):
         super().__init__()
         with open('key', 'rt') as f:
@@ -168,26 +169,14 @@ class Server(LogMixin):
                                      rw: asyncio.StreamWriter
                                      ):
         await asyncio.gather(
-            self.__copy(lr, rw),
-            self.__copy(rr, lw))
+            self.copy(lr, rw),
+            self.copy(rr, lw))
 
         lw.close()
         rw.close()
         await lw.wait_closed()
         await rw.wait_closed()
 
-    async def __copy(self, r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
-        """将r中的数据写入w"""
-        while 1:
-            data = await r.read(4096)  # 这里阻塞了，等待本地的数据
-            if not data:
-                w.close()
-                await w.wait_closed()
-                break
-
-            w.write(data)
-            await w.drain()
-        return
 
 
 if __name__ == '__main__':

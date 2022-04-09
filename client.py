@@ -3,13 +3,13 @@ import asyncio
 from typing import Tuple
 from SafeBlock import Key, Block, DecryptError
 from aisle import LOG, LogMixin
-
+from xybase import StreamBase
 
 class RemoteClientError(Exception):
     pass
 
 
-class Client(LogMixin):
+class Client(StreamBase):
     """维护和远程的连接"""
 
     def __init__(self, remoteAddr: str = 'localhost', remotePort: int = 9190, tag:str=None) -> None:
@@ -65,8 +65,8 @@ class Client(LogMixin):
             return
         
         result = await asyncio.gather(
-            self.__copy(localReader, self.remoteWriter),
-            self.__copy(self.remoteReader, localWriter),
+            self.copy(localReader, self.remoteWriter),
+            self.copy(self.remoteReader, localWriter),
             return_exceptions=True
         )
         for r in result:
@@ -100,18 +100,6 @@ class Client(LogMixin):
             self.remoteAddr, self.remotePort,
             ssl=True)
 
-    async def __copy(self, r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
-        """将r中的数据写入w"""
-        while 1:
-            data = await r.read(4096)  # 这里阻塞了，等待本地的数据
-            if not data:
-                w.write_eof()
-                await w.drain()
-                break
-            
-            w.write(data)
-            await w.drain()
-        return
 
 
 if __name__ == '__main__':
