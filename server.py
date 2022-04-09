@@ -13,9 +13,6 @@ import gc
 class Server(StreamBase):
     def __init__(self):
         super().__init__()
-        self.connections = 0
-
-        self.__count = 0
 
         # 获取安全环境
         self.safeContext = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -31,11 +28,10 @@ class Server(StreamBase):
         async with server:  # 需要学习async with
             await server.serve_forever()
 
+    # 这里不加StreamBase.connectionCount计数器装饰器，减少日志量
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
-        self.connections += 1
         # TODO: FOR DEBUG，需要单独做到线程中
-        self.logger.info(f'Current connections number: {self.connections}')
         requestId = self.requestCount
         logger = self.logger.getChild(f'{requestId}')
         try:
@@ -125,11 +121,6 @@ class Server(StreamBase):
             self.logger.info(f'Current connections number: {self.connections}')
             return
 
-    @property
-    def requestCount(self):
-        """返回该服务器处理的请求总量"""
-        self.__count += 1
-        return self.__count
 
     async def __exchangeBlock(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, payload: dict = None):
         '''远程的连接预协商'''

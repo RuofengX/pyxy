@@ -7,13 +7,15 @@ from struct import pack, unpack
 import asyncio
 import shortuuid
 
+from xybase import StreamBase
+
 # from memory_profiler import profile
 
 class SocksError(Exception):
     pass
 
 
-class SockRelay(LogMixin):
+class SockRelay(StreamBase, LogMixin):
     """维护本地Socks5代理"""
     username = 'username'
     password = 'password'
@@ -25,6 +27,8 @@ class SockRelay(LogMixin):
                  remoteAddr: str = 'localhost',
                  remotePort: int = 9190
                  ) -> None:
+        super().__init__()
+        
         self.sockProxyAddr = sockProxyAddr
         self.sockProxyPort = sockProxyPort
         self.remoteAddr = remoteAddr
@@ -37,7 +41,7 @@ class SockRelay(LogMixin):
             asyncio.run(self.startSockServer())
         except KeyboardInterrupt:
             return
-            
+    
     async def startSockServer(self) -> None:
         """启动Socks5服务器"""
         # TODO: 给Socks连接也加上TLS加密
@@ -52,7 +56,8 @@ class SockRelay(LogMixin):
         async with server:
             await server.serve_forever()
             
-            
+    
+    @StreamBase.countConnection
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
         requestId = shortuuid.ShortUUID().random(length=8).upper()

@@ -5,10 +5,12 @@ from SafeBlock import Key
 class StreamBase(LogMixin):
     def __init__(self, *args, **kwargs):
         
+        self.totalConnections = 0  # 一共处理了多少连接
+        self.currentConnections = 0  # 目前还在保持的连接数
+        
         with open('key', 'rt') as f:
             keyStr = f.readline().strip()
         keyStr = keyStr.replace('\n', '')
-        
         self.key = Key(keyStr)
         
         super().__init__(*args, **kwargs)
@@ -40,6 +42,26 @@ class StreamBase(LogMixin):
             
         self.logger.debug(f'双向流均已关闭')
 
+    @staticmethod
+    def countConnection(coro: asyncio.coroutine) -> asyncio.coroutine:
+        """连接计数器装饰器
+
+        接收一个协程，在协程执行前自动增加连接计数，在协程执行后自动减少连接计数
+        """
+        async def wrapper(self: StreamBase, *args, **kwargs):
+            
+            self.totalConnections += 1
+            self.currentConnections += 1
+            self.logger.info(f'当前连接数: {self.currentConnections}')
+            
+            rtn = await coro(self, *args, **kwargs)
+            
+            self.currentConnections -= 1
+            self.logger.info(f'当前连接数: {self.currentConnections}')
+            
+            return rtn
+        return wrapper
+    
     async def __copy(self,
                      r: asyncio.StreamReader,
                      w: asyncio.StreamWriter,
