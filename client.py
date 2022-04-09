@@ -5,7 +5,6 @@ from SafeBlock import Key, Block, DecryptError
 from aisle import LOG, LogMixin
 from xybase import StreamBase
 import copy
-from memory_profiler import profile
 import sys
 
 
