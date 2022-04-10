@@ -1,6 +1,3 @@
 wheel
 pycryptodome
-shortuuid
-objprint
-uvloop
-lib/Aisle-0.4.0.tar.gz
+lib/Aisle-0.4.1.tar.gz
