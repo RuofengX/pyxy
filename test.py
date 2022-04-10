@@ -5,8 +5,8 @@ from objprint import op
 import socket
 import asyncio
 import socks
-
-def sockResuestTest():
+SUCCESS_LIST = []
+def sockResuestTest(cb:callable=None, *args, **kwargs):
     s = socks.socksocket()
     
     s.set_proxy(socks.SOCKS5, 'localhost', 9011, username='username', password='password')
@@ -16,7 +16,7 @@ def sockResuestTest():
     response = b''
     while 1:
         data = s.recv(4096)
-        print(len(data))
+        # print(len(data))
         
         if data[-4:] == b'\r\n\r\n':
             response += data
@@ -28,15 +28,31 @@ def sockResuestTest():
         response += data
     s.close()
     print(response)
+    if cb is not None:
+        cb(*args, **kwargs)
     
 def stressTest(n: int):
     """socks压力测试"""
-    with ThreadPoolExecutor(max_workers=10) as pool:
-        for i in range(n):
-            future = pool.submit(sockResuestTest)
+    pool = ThreadPoolExecutor(max_workers=8)
+    
+    def cb(ls:list):
+        ls.append(len(ls))
+        
+    successList = []
+    for i in range(n):
+        print(i)
+        pool.submit(sockResuestTest, cb, successList)
+    
+    pool.shutdown(wait=True)
+    
+    for i in range(n):
+        if i not in successList:
+            print(f'{i} fail')
+            
+    print(successList)
     
 if __name__ == '__main__':
-    sockResuestTest()
-    # stressTest(1000)
+    # sockResuestTest()
+    stressTest(10)
 
 
