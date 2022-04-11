@@ -1,11 +1,9 @@
-import gc
 import socket
 from client import Client, RemoteClientError
 from pyxy import SOCKS_VERSION
 from aisle import LogMixin
 from struct import pack, unpack
 import asyncio
-import shortuuid
 
 from xybase import StreamBase
 
@@ -47,10 +45,11 @@ class SockRelay(StreamBase, LogMixin):
         # TODO: 给Socks连接也加上TLS加密
         
         server = await asyncio.start_server(
-            self.localSockHandle, self.sockProxyAddr, self.sockProxyPort)
+            self.localSockHandle, self.sockProxyAddr, self.sockProxyPort,
+            backlog=4096)
 
         addr = server.sockets[0].getsockname()
-        self.logger.info(f'服务器启动, 端口:{addr[1]}')
+        self.logger.warning(f'服务器启动, 端口:{addr[1]}')
 
         async with server:
             await server.serve_forever()
@@ -59,12 +58,9 @@ class SockRelay(StreamBase, LogMixin):
     @StreamBase.handlerDeco
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
-        
-        # DEBUG
-        # objgraph.show_growth()
+        # TODO: 和本地的连接异常断开后会导致大量的内存泄露，需要验证
         
         
-        # requestId = shortuuid.ShortUUID().random(length=8).upper()
         requestId = self.totalConnections - 1
         logger = self.logger.get_child(str(requestId))
         logger.debug(f'接收来自{writer.get_extra_info("peername")}的连接')

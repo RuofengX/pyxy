@@ -1,13 +1,9 @@
 # coding: utf-8
 import asyncio
-from sqlite3 import Time
-from objprint import objstr
-from aisle import LOG, LogMixin
-from SafeBlock import Block, Key, DecryptError
-from xybase import StreamBase
 import socket
 import ssl
-import gc
+from SafeBlock import Block, DecryptError
+from xybase import StreamBase
 
 
 class Server(StreamBase):
@@ -26,7 +22,7 @@ class Server(StreamBase):
                                             addr, 
                                             9190,
                                             ssl=self.safeContext,
-                                            backlog=1000)
+                                            backlog=8192)
         self.logger.warning(f"Server starting at {addr}:{port}")
         async with server:  # 需要学习async with
             await server.serve_forever()
