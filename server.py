@@ -14,6 +14,7 @@ class Server(StreamBase):
         self.safeContext = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.safeContext.load_cert_chain(
             certfile='./certs/pyxy.s-2.link_bundle.crt', keyfile='./certs/pyxy.s-2.link.key')
+        # You can load your own cert and key files here.
 
     async def start(self, addr: str, port):
         """异步入口函数"""
