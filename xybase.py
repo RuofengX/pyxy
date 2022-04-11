@@ -1,6 +1,6 @@
 import gc
 import asyncio
-import objgraph
+import objgraph  # TODO: 正式版删除
 
 
 from SafeBlock import Key
@@ -22,7 +22,7 @@ class StreamBase(LogMixin):
         self.key = Key(keyStr)
         
         super().__init__(*args, **kwargs)
-        self.logger.set_level('INFO')
+        self.logger.set_level('WARNING')
 
     async def exchangeStream(self,
                              localReader: asyncio.StreamReader,
@@ -114,10 +114,14 @@ class StreamBase(LogMixin):
             self.logger.info(f'当前连接数: {self.currentConnections}')
             
             if self.currentConnections == 0:
-                objgraph.show_growth()
+                objgraph.show_growth(shortnames=False)  # TODO: 正式版删除
+                print('-------------------')
+                # TODO: 内存泄漏问题
+                
                 # 仅当当前连接数为0时，才释放内存，防止回收还在等待的协程
-                gc.collect()
-                self.logger.info(f'垃圾回收完成，当前内存状态\n{gc.get_stats(memory_pressure=False)}')
+                # gc.collect()
+                
+                self.logger.warning(f'垃圾回收完成，当前内存状态\n{gc.get_stats(memory_pressure=False)}')
                 # objgraph.show_growth()
                 # objgraph.show_growth()
                 

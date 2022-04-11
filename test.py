@@ -1,11 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from multiprocessing import Queue
-from threading import Thread 
-from urllib import response
-from aisle import LOG as logging
-from objprint import op
-import socket
-import asyncio
+from random import Random
+import random
+import time
+
 import socks
 SUCCESS_LIST = []
 def sockResuestTest():
@@ -29,12 +26,13 @@ def sockResuestTest():
     except Exception as e:
         print(e)
     finally:
-        s.close()
+        if random.randint(0, 1):  # 模拟连接没有正确关闭
+            s.close()
         print(response)
     
 def stressTest(n: int):
     """socks压力测试"""
-    pool = ThreadPoolExecutor(max_workers=100)
+    pool = ProcessPoolExecutor(max_workers=60)
     for i in range(n):
         pool.submit(sockResuestTest)
     pool.shutdown(wait=True)
@@ -44,7 +42,9 @@ def stressTest(n: int):
                 
 if __name__ == '__main__':
     # sockResuestTest()
-    
-    stressTest(100)
+    while 1:
+        stressTest(500)
+        print('-'*20)
+        time.sleep(5)
 
 
