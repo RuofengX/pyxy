@@ -21,7 +21,7 @@ class Server(StreamBase):
 
     async def start(self, addr: str, port):
         """异步入口函数"""
-        self.renameLogger(f'Server-{addr}:{port}')
+        self.logger = self.logger.get_child(f'{addr}:{port}')
         server = await asyncio.start_server(self.handler, 
                                             addr, 
                                             9190,
@@ -31,12 +31,12 @@ class Server(StreamBase):
         async with server:  # 需要学习async with
             await server.serve_forever()
 
-    # 这里不加StreamBase.connectionCount计数器装饰器，减少日志量
+    @StreamBase.handlerDeco
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
         # TODO: FOR DEBUG，需要单独做到线程中
         requestId = self.totalConnections
-        logger = self.logger.getChild(f'{requestId}')
+        logger = self.logger.get_child(f'{requestId}')
         try:
             """请求处理主体"""
 
@@ -119,7 +119,7 @@ class Server(StreamBase):
 
             """收尾工作"""       
             logger.debug(f'Request Handle End')
-            gc.collect()
+                   
             return
 
 

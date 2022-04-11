@@ -47,8 +47,7 @@ class SockRelay(StreamBase, LogMixin):
         # TODO: 给Socks连接也加上TLS加密
         
         server = await asyncio.start_server(
-            self.localSockHandle, self.sockProxyAddr, self.sockProxyPort,
-            backlog=1000)
+            self.localSockHandle, self.sockProxyAddr, self.sockProxyPort)
 
         addr = server.sockets[0].getsockname()
         self.logger.info(f'服务器启动, 端口:{addr[1]}')
@@ -57,11 +56,17 @@ class SockRelay(StreamBase, LogMixin):
             await server.serve_forever()
             
     
-    @StreamBase.countConnection
+    @StreamBase.handlerDeco
     async def localSockHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """处理本地Socks5代理的请求"""
-        requestId = shortuuid.ShortUUID().random(length=8).upper()
-        logger = self.logger.getChild(f'{requestId}')
+        
+        # DEBUG
+        # objgraph.show_growth()
+        
+        
+        # requestId = shortuuid.ShortUUID().random(length=8).upper()
+        requestId = self.totalConnections - 1
+        logger = self.logger.get_child(str(requestId))
         logger.debug(f'接收来自{writer.get_extra_info("peername")}的连接')
         try:
             # Socks5参考文献
@@ -174,8 +179,9 @@ class SockRelay(StreamBase, LogMixin):
             try:
                 writer.close()
                 await writer.wait_closed()
+                logger.debug(f'本地连接已关闭')
             except Exception as e:
-                logger.debug(f'关闭本地连接失败 > {e}')
+                logger.critical(f'关闭本地连接失败 > {e}')
                 
             try:
                 await remoteClient.remoteClose()
@@ -184,7 +190,9 @@ class SockRelay(StreamBase, LogMixin):
                 
             """收尾工作"""
             logger.info(f'请求处理结束')
-            gc.collect()
+                        
+            # DEBUG
+            # objgraph.show_growth()
             return
 
 

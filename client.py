@@ -16,11 +16,11 @@ class Client(StreamBase):
     def __init__(self, remoteAddr: str = 'localhost', remotePort: int = 9190, tag: str = None) -> None:
         super().__init__()
         if tag is not None:
-            self.renameLogger(f'Client-{tag}')
-
+            self.logger = self.logger.getChild(f'{tag}')
         self.remoteAddr = remoteAddr
         self.remotePort = remotePort
-
+        
+        
     # HACK: 需要优化内存，减小长连接的内存占用
     async def remoteHandshake(self, payload: dict) -> tuple:
         '''打开一个连接之前的预协商'''
@@ -65,7 +65,7 @@ class Client(StreamBase):
             return
         self.remoteWriter.close()
         await self.remoteWriter.wait_closed()
-        self.logger.debug('远程连接已关闭')
+        self.logger.info('远程连接已关闭')
 
     async def __exchangeBlock(self, raw: bytes) -> bytes:
         '''远程的连接预协商，self.reader和writer初始化'''

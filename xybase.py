@@ -1,9 +1,17 @@
-from aisle import LogMixin
+import gc
 import asyncio
+import objgraph
+
+
 from SafeBlock import Key
+from aisle import LogMixin
+
 
 class StreamBase(LogMixin):
+    """一个异步处理多个流的基类"""
     def __init__(self, *args, **kwargs):
+        
+        gc.disable()  # 关闭垃圾回收
         
         self.totalConnections = 0  # 一共处理了多少连接
         self.currentConnections = 0  # 目前还在保持的连接数
@@ -14,6 +22,7 @@ class StreamBase(LogMixin):
         self.key = Key(keyStr)
         
         super().__init__(*args, **kwargs)
+        self.logger.set_level('INFO')
 
     async def exchangeStream(self,
                              localReader: asyncio.StreamReader,
@@ -33,35 +42,15 @@ class StreamBase(LogMixin):
             self.logger.error('远程连接提前关闭')
             return
 
-        closeEvent = asyncio.Event()
         
         await asyncio.gather(
             self.__copy(localReader, remoteWriter, debug='upload'),
-            self.__copy(remoteReader, localWriter, debug='download')
+            self.__copy(remoteReader, localWriter, debug='download'),
+            return_exceptions=True
         )
             
         self.logger.debug(f'双向流均已关闭')
 
-    @staticmethod
-    def countConnection(coro: asyncio.coroutine) -> asyncio.coroutine:
-        """连接计数器装饰器
-
-        接收一个协程，在协程执行前自动增加连接计数，在协程执行后自动减少连接计数
-        """
-        async def wrapper(self: StreamBase, *args, **kwargs):
-            
-            self.totalConnections += 1
-            self.currentConnections += 1
-            self.logger.info(f'当前连接数: {self.currentConnections}')
-            
-            rtn = await coro(self, *args, **kwargs)
-            
-            self.currentConnections -= 1
-            self.logger.info(f'当前连接数: {self.currentConnections}')
-            
-            return rtn
-        return wrapper
-    
     async def __copy(self,
                      r: asyncio.StreamReader,
                      w: asyncio.StreamWriter,
@@ -74,6 +63,7 @@ class StreamBase(LogMixin):
         debug: 无视即可
         """
         debugCount = 0
+        self.logger.debug(f'开始拷贝流，debug：{debug}')
         while 1:
             debugCount += 1
             try:
@@ -81,18 +71,59 @@ class StreamBase(LogMixin):
                 if r.at_eof():
                     break
 
-                data = await r.read(4096)  # 如果使用read的话，循环会一直卡在await
-            
-                if not data:
+                data = await asyncio.wait_for(
+                    r.read(4096),  # 如果仅仅使用read的话，循环会一直卡在await
+                    timeout=2.05
+                )
+                if data == b'' and r.at_eof():
                     break
-                # self.logger.info(f'{r.at_eof()}')
+                # self.logger.debug(f'{r.at_eof()}')
                 w.write(data)
                 await w.drain()
 
+            except asyncio.TimeoutError:
+                self.logger.debug(f'连接超时')
+                break
+            
             except Exception as v:
                 self.logger.debug(f'远程连接中止 {v}')
                 break
         
         w.close()
         await w.wait_closed()
+        self.logger.debug(f'拷贝流结束，debug：{debug}')
         return
+
+    @staticmethod
+    def handlerDeco(coro: asyncio.coroutine) -> asyncio.coroutine:
+        """处理连接的装饰器
+
+        接收一个协程，在协程执行前自动增加连接计数，在协程执行后自动减少连接计数
+        """
+        async def handler(self: StreamBase, *args, **kwargs):
+            
+            self.totalConnections += 1
+            self.currentConnections += 1
+            self.logger.debug(f'当前连接数: {self.currentConnections}')
+            
+            
+            rtn = await coro(self, *args, **kwargs)
+            
+            
+            self.currentConnections -= 1
+            self.logger.info(f'当前连接数: {self.currentConnections}')
+            
+            if self.currentConnections == 0:
+                objgraph.show_growth()
+                # 仅当当前连接数为0时，才释放内存，防止回收还在等待的协程
+                gc.collect()
+                self.logger.info(f'垃圾回收完成，当前内存状态\n{gc.get_stats(memory_pressure=False)}')
+                # objgraph.show_growth()
+                # objgraph.show_growth()
+                
+                
+        
+            return rtn
+        
+        return handler
+    
