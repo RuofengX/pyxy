@@ -1,6 +1,7 @@
 wheel
+lib/Aisle-0.6.0.tar.gz
 pycryptodome
-lib/Aisle-0.5.4.tar.gz
 
-# MEMORY_TEST
+# FOR TEST AND DEBUG
+pysocks
 objgraph

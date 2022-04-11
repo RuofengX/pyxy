@@ -1,4 +1,3 @@
-import gc
 import socket
 from client import Client, RemoteClientError
 from pyxy import SOCKS_VERSION
