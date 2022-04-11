@@ -4,10 +4,12 @@ import socket
 import ssl
 from SafeBlock import Block, DecryptError
 from xybase import StreamBase
+from aisle import SyncLogger
 
 
 class Server(StreamBase):
     """服务器对象"""
+
     def __init__(self):
         super().__init__()
 
@@ -19,7 +21,7 @@ class Server(StreamBase):
 
     async def start(self, addr: str, port):
         """异步入口函数"""
-        self.logger = self.logger.get_child(f'{addr}:{port}')
+        self.logger: SyncLogger = self.logger.get_child(f'{addr}:{port}')
         server = await asyncio.start_server(self.handler,
                                             addr,
                                             9190,
