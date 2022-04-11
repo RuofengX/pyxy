@@ -28,9 +28,9 @@ def sockResuestTest():
             
     except Exception as e:
         print(e)
-        
-    # s.close()
-    print(response)
+    finally:
+        s.close()
+        print(response)
     
 def stressTest(n: int):
     """socks压力测试"""
@@ -45,6 +45,6 @@ def stressTest(n: int):
 if __name__ == '__main__':
     # sockResuestTest()
     
-    stressTest(10)
+    stressTest(100)
 
 

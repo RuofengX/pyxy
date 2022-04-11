@@ -1,8 +1,6 @@
 import gc
 import asyncio
 import objgraph
-from setuptools import find_packages
-
 
 
 from SafeBlock import Key
@@ -10,7 +8,9 @@ from aisle import LogMixin
 
 
 class StreamBase(LogMixin):
+    """一个异步处理多个流的基类"""
     def __init__(self, *args, **kwargs):
+        
         gc.disable()  # 关闭垃圾回收
         
         self.totalConnections = 0  # 一共处理了多少连接
@@ -22,6 +22,7 @@ class StreamBase(LogMixin):
         self.key = Key(keyStr)
         
         super().__init__(*args, **kwargs)
+        self.logger.set_level('INFO')
 
     async def exchangeStream(self,
                              localReader: asyncio.StreamReader,
@@ -80,6 +81,10 @@ class StreamBase(LogMixin):
                 w.write(data)
                 await w.drain()
 
+            except asyncio.TimeoutError:
+                self.logger.debug(f'连接超时')
+                break
+            
             except Exception as v:
                 self.logger.debug(f'远程连接中止 {v}')
                 break
@@ -109,11 +114,12 @@ class StreamBase(LogMixin):
             self.logger.info(f'当前连接数: {self.currentConnections}')
             
             if self.currentConnections == 0:
+                objgraph.show_growth()
                 # 仅当当前连接数为0时，才释放内存，防止回收还在等待的协程
-                # _m = len(gc.get_objects(generation=2))
                 gc.collect()
-                self.logger.info(f'垃圾回收，当前内存状态\n{gc.get_stats(memory_pressure=False)}')
-                
+                self.logger.info(f'垃圾回收完成，当前内存状态\n{gc.get_stats(memory_pressure=False)}')
+                # objgraph.show_growth()
+                # objgraph.show_growth()
                 
                 
         

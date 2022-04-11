@@ -66,7 +66,7 @@ class SockRelay(StreamBase, LogMixin):
         
         # requestId = shortuuid.ShortUUID().random(length=8).upper()
         requestId = self.totalConnections - 1
-        logger = self.logger.getChild(str(requestId))  # 临时解决内存溢出
+        logger = self.logger.get_child(str(requestId))
         logger.debug(f'接收来自{writer.get_extra_info("peername")}的连接')
         try:
             # Socks5参考文献
@@ -190,12 +190,7 @@ class SockRelay(StreamBase, LogMixin):
                 
             """收尾工作"""
             logger.info(f'请求处理结束')
-            
-            logger.manager.loggerDict.pop(logger.name)  # 临时解决内存溢出
-            remoteClient.logger.manager.loggerDict.pop(remoteClient.logger.name)
-            
-            # 这里进行gc.collect()会导致高并发情况下内存泄漏
-            
+                        
             # DEBUG
             # objgraph.show_growth()
             return
