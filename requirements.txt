@@ -1,6 +1,6 @@
 wheel
 pycryptodome
-lib/Aisle-0.5.3-hotfix.tar.gz
+lib/Aisle-0.5.4.tar.gz
 
 # MEMORY_TEST
 objgraph
