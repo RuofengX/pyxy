@@ -49,7 +49,7 @@ These would run the whole server.
 ### Client side
 
 ```bash
-python3 ProxyBroker.py
+python3 proxy_broker.py
 ```
 These would run the client. Client would opening a sock5 porxy listening on port 9011, if any connection comes, it would connect to server, and then forward ther connection.
 

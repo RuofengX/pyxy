@@ -24,7 +24,7 @@ class StreamBase(LogMixin):
         super().__init__(*args, **kwargs)
         self.logger.set_level('WARNING')
 
-    async def exchangeStream(self,
+    async def exchange_stream(self,
                              localReader: asyncio.StreamReader,
                              localWriter: asyncio.StreamWriter,
                              remoteReader: asyncio.StreamReader,
