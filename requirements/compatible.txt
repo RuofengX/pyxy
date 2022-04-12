@@ -1,5 +1,5 @@
 wheel
-lib/Aisle-0.6.0.tar.gz
+lib/Aisle-0.6.1.tar.gz
 pycryptodome
 
 # FOR TEST AND DEBUG
