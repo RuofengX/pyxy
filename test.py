@@ -5,7 +5,7 @@ import time
 
 import socks
 SUCCESS_LIST: list = []
-def sockResuestTest():
+def sock_request_test():
     try:
         s = socks.socksocket()
     
@@ -30,21 +30,25 @@ def sockResuestTest():
             s.close()
         print(response)
     
-def stressTest(n: int):
+def stress_test(n: int):
     """socks压力测试"""
     pool = ProcessPoolExecutor(max_workers=60)
     for i in range(n):
-        pool.submit(sockResuestTest)
+        pool.submit(sock_request_test)
     pool.shutdown(wait=True)
     
         
-            
+def stress_test_loop(n: int):
+    """循环压测"""
+    while 1:
+        stress_test(n)
+        print('-'*20)
+        time.sleep(5)
                 
 if __name__ == '__main__':
-    sockResuestTest()
-    # while 1:
-    #     stressTest(500)
-    #     print('-'*20)
-    #     time.sleep(5)
+    sock_request_test()
+    stress_test_loop(100)
+    
+    
 
 

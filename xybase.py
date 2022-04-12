@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Awaitable, Callable, Coroutine
+from typing import Any, Callable, Coroutine
 import gc
 import asyncio
 import objgraph  # TODO: 正式版删除
@@ -98,7 +98,7 @@ class StreamBase(LogMixin):
 
     @staticmethod
     def handlerDeco(coro: Callable[[StreamBase, asyncio.StreamReader, asyncio.StreamWriter], Coroutine[Any, Any, Any]])\
-            -> Callable[[StreamBase, Any, Any], Coroutine[Any, Any, Any]]:
+            -> Callable[[StreamBase, asyncio.StreamReader, asyncio.StreamWriter], Coroutine[Any, Any, Any]]:
         """处理连接的装饰器
 
         接收一个用于连接处理的协程，一般名字叫handle。
@@ -108,12 +108,14 @@ class StreamBase(LogMixin):
 
             self.total_conn_count += 1
             self.current_conn_count += 1
-            self.logger.debug(f'当前连接数: {self.current_conn_count}')
+            self.logger.debug(f'开始处理新的连接')
+            self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
 
             rtn = await coro(self, *args, **kwargs)
 
             self.current_conn_count -= 1
-            self.logger.info(f'当前连接数: {self.current_conn_count}')
+            self.logger.debug(f'连接处理完毕')
+            self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
 
             if self.current_conn_count == 0:
                 objgraph.show_growth(shortnames=False)  # TODO: 正式版删除
