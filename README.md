@@ -4,6 +4,7 @@
 
 - [PyXy](#pyxy)
   - [“朋友需要”](#朋友需要)
+  - [- Develop](#--develop)
   - [Dependencies](#dependencies)
   - [Before you run](#before-you-run)
     - [Key](#key)
@@ -11,17 +12,17 @@
   - [Run server and client](#run-server-and-client)
     - [Server side](#server-side)
     - [Client side](#client-side)
-  - [Data safty](#data-safty)
-  - [Problemshooting](#problemshooting)
+  - [Data safety](#data-safety)
+  - [Troubleshooting](#troubleshooting)
   - [License](#license)
   - [Develop](#develop)
 ---
-An async stream exchange program, writen in python, using asyncio.
+An async stream exchange program, written in python, using asyncio.
 
 This project is an open-source project, it is absolutely free to use, but you should be aware of the following:
-- Do not use it for illegal(in any country or reagion) purposes.
+- Do not use it for illegal(in any country or region) purposes.
 - Remember there is no warranty for this program, 
-- Also no warrenty to data , transfer or your privacy safty.
+- Also no warranty to data , transfer or your privacy safety.
 
 
 ## Dependencies
@@ -33,7 +34,7 @@ This project is an open-source project, it is absolutely free to use, but you sh
  In most cases, you can use `pip install -r requirements/compatible.txt` to install all dependencies. If that doesn't work, please open an issue.  
  Using `venv` to creating a virtual environment is also recommended, it's all depended on you.
 
- If you are using linux system, OR you could makesure that your system could use uvloop module, you can use `pip install -r requirements/with_uvloop.txt` to install all dependencies and uvloop module, which would fastern up the program. You may also install build tools for building uvloop(if error occur when installing uvloop), which could use `sudo apt install build-essential` on Ubuntu to solve.
+ If you are using linux system, OR you could make sure that your system could use uvloop module, you can use `pip install -r requirements/with_uvloop.txt` to install all dependencies and uvloop module, which would fasten up the program. You may also install build tools for building uvloop(if error occur when installing uvloop), which could use `sudo apt install build-essential` on Ubuntu to solve.
 
 ## Before you run
 
@@ -48,7 +49,7 @@ This key file will be used to create a `Key` object in module `SafeBlock`, you c
 
 ### TLS Certificate
 
-The best solution is registe a domain and apply a SSL certificate.  
+The best solution is register a domain and apply a SSL certificate.  
 In server module, you can set the certificate file and key file in `Server.__init__()` function.  
 
 There are also some other ways to bypass this problem, but it's not recommended.
@@ -68,18 +69,18 @@ These would run the whole server.
 ```bash
 python3 proxy_broker.py
 ```
-These would run the client. Client would opening a sock5 porxy listening on port 9011, if any connection comes, it would connect to server, and then forward ther connection.
+These would run the client. Client would opening a sock5 proxy listening on port 9011, if any connection comes, it would connect to server, and then forward the connection.
 
-## Data safty
+## Data safety
 
 Data between client and server is encrypted by TLS, using your own SSL certificate.
 
 Data between client and your socks5 proxy is **NOT** encrypted, do not use sock5 proxy on the public!
 
-## Problemshooting
+## Troubleshooting
 
 This project is still in developing, so there are some problems that you may encounter.  
-For now problemshooting is none, but if you have any problem, please open an issue.
+For now troubleshooting is none, but if you have any problem, please open an issue.
 
 ## License
 
@@ -87,6 +88,7 @@ GPLv3
 
 ## Develop
 
-Linter: mypy, pylint is to confuse for this small program  
+Git Branch: Dev
+Linter: mypy
 System: Linux, for testing uvloop and other module purpose  
-Python interpreter: Python 3.9.12, using pypy for better performence and gently exiting.
+Python interpreter: Python 3.9.12, using pypy for better performance and gently exiting.
