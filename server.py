@@ -19,16 +19,21 @@ class Server(StreamBase):
             certfile='./certs/pyxy.s-2.link_bundle.crt', keyfile='./certs/pyxy.s-2.link.key')
         # You can load your own cert and key files here.
 
-    async def start(self, addr: str, port):
-        """异步入口函数"""
+    async def start(self, addr: str, port, backlog: int=8192):
+        """异步入口函数
+        
+        addr: 连接监听地址
+        port: 连接监听端口
+        backlog: 监听队列长度，超过这个数量的并发连接将被拒绝
+        """
         self.logger: SyncLogger = self.logger.get_child(f'{addr}:{port}')
         server = await asyncio.start_server(self.handler,
                                             addr,
                                             9190,
                                             ssl=self.safe_context,
-                                            backlog=8192)
+                                            backlog=backlog)
         self.logger.warning(f"Server starting at {addr}:{port}")
-        async with server:  # 需要学习async with
+        async with server:
             await server.serve_forever()
 
     @StreamBase.handlerDeco

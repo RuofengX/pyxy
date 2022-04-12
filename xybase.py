@@ -115,7 +115,7 @@ class StreamBase(LogMixin):
 
             self.current_conn_count -= 1
             self.logger.debug(f'连接处理完毕')
-            self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
+            self.logger.warning(f'当前并发连接数: {self.current_conn_count}')
 
             if self.current_conn_count == 0:
                 objgraph.show_growth(shortnames=False)  # TODO: 正式版删除

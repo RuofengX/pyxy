@@ -11,7 +11,7 @@ from xybase import StreamBase
 # from memory_profiler import profile
 SOCKS_VERSION = 5
 
-
+# HACK: 客户端高并发结束之后，垃圾清理之后，会拒绝所有新的连接
 class SocksError(Exception):
     """Sock协议错误"""
 
@@ -34,6 +34,14 @@ class SockRelay(StreamBase, LogMixin):
                  remoteAddr: str = 'localhost',
                  remotePort: int = 9190
                  ) -> None:
+        """初始化一个Sock5代理对象
+
+        Args:
+            sockProxyAddr (str, optional): sock服务监听地址. Defaults to 'localhost'.
+            sockProxyPort (int, optional): sock服务监听端口. Defaults to 9011.
+            remoteAddr (str, optional): 远程服务器地址. Defaults to 'localhost'.
+            remotePort (int, optional): 远程服务器端口. Defaults to 9190.
+        """
         super().__init__()
 
         self.sock_proxy_addr = sockProxyAddr
@@ -51,13 +59,18 @@ class SockRelay(StreamBase, LogMixin):
         except KeyboardInterrupt:
             return
 
-    async def start_sock_server(self) -> None:
-        """启动Socks5服务器"""
+    async def start_sock_server(self, backlog=64) -> None:
+        """启动Socks5服务器
+        
+        backlog: 最大本地连接数。在客户端上，一般设置的小一点以节省内存占用。
+        此外，事件循环在搞并发状态下自动尽可能多地申请资源，这意味着并发性能越高，对系统占用越大。
+        经测试，这种资源占用时临时的，在低并发状态下运行一段时间后，事件循环会自动释放，形成弹性伸缩。
+        """
         # TODO: 给Socks连接也加上TLS加密
 
         server = await asyncio.start_server(
             self.local_sock_handle, self.sock_proxy_addr, self.sock_proxy_port,
-            backlog=4096)
+            backlog=backlog)
 
         addr = server.sockets[0].getsockname()
         self.logger.warning(f'服务器启动, 端口:{addr[1]}')

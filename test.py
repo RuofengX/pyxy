@@ -5,7 +5,7 @@ import time
 
 import socks
 SUCCESS_LIST: list = []
-def sock_request_test():
+def sock_request_test(sim_conn_lost: bool = False) -> None:
     try:
         s = socks.socksocket()
     
@@ -22,24 +22,36 @@ def sock_request_test():
                 break
             
             response += data
+        
+        print(response)
             
     except Exception as e:
         print(e)
     finally:
-        if random.randint(0, 1):  # 模拟连接没有正确关闭
+        if sim_conn_lost:
+            if random.randint(0, 1):  # 模拟连接没有正确关闭
+                s.close()
+        else:
             s.close()
-        print(response)
+            
     
 def stress_test(n: int):
-    """socks压力测试"""
-    pool = ProcessPoolExecutor(max_workers=60)
+    """socks压力测试
+    
+    n: 请求总量
+    """
+    # pool = ProcessPoolExecutor(max_workers=60)  # 60进程，最大并发量
+    pool = ThreadPoolExecutor(max_workers=1000)  # 1000线程，最大并发量
     for i in range(n):
         pool.submit(sock_request_test)
     pool.shutdown(wait=True)
     
         
 def stress_test_loop(n: int):
-    """循环压测"""
+    """循环压测
+    
+    n: 一轮循环的请求总量
+    """
     while 1:
         stress_test(n)
         print('-'*20)
@@ -47,7 +59,7 @@ def stress_test_loop(n: int):
                 
 if __name__ == '__main__':
     sock_request_test()
-    stress_test_loop(100)
+    stress_test_loop(5000)
     
     
 
