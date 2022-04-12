@@ -18,11 +18,12 @@ try:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except ImportError as err:
     if sys.platform == 'linux':
-        warnings.warn('''uvloop loaded fail. You see this warning because you are running this program on linux, which may supports uvloop module.
+        warnings.warn(f'''uvloop loaded fail. You see this warning because you are running this program on linux, which may supports uvloop module.
                       uvloop will bring the whole program much faster, please consider install it.
                       Detail debug info: {err}
                       ''')
     pass
+    # TODO: pypy3.9暂未支持uvloop，参考链接 https://github.com/PyO3/pyo3/issues/2137
 
 
 class StreamBase(LogMixin):
