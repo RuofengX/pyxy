@@ -1,85 +1,103 @@
-from codecs import StreamWriter
+"""
+Filename: client.py
+"""
 import asyncio
-from typing import Tuple
-from SafeBlock import Block, DecryptError
-from xybase import StreamBase
 import copy
+from typing import Tuple
+from safe_block import Block, DecryptError
+from xybase import StreamBase
+from aisle import SyncLogger
 
 
 class RemoteClientError(Exception):
-    pass
+    """和远程连接的客户端对象错误"""
+
+    def __init__(self, msg: str = None):
+        super().__init__(msg)
+        self.message = msg
+
+    def __str__(self) -> str:
+        return f'RemoteClientError: {self.message}'
 
 
 class Client(StreamBase):
     """维护和远程的连接"""
 
-    def __init__(self, remoteAddr: str = 'localhost', remotePort: int = 9190, tag: str = None) -> None:
+    def __init__(self,
+                 remoteAddr: str = 'localhost',
+                 remotePort: int = 9190,
+                 tag: str = None
+                 ) -> None:
         super().__init__()
         if tag is not None:
-            self.logger = self.logger.getChild(f'{tag}')
-        self.remoteAddr = remoteAddr
-        self.remotePort = remotePort
-        
-        
+            self.logger: SyncLogger = self.logger.getChild(f'{tag}')
+        self.remote_addr = remoteAddr
+        self.remote_port = remotePort
+        self.remote_reader:asyncio.StreamReader
+        self.remote_writer:asyncio.StreamWriter
+
     # HACK: 需要优化内存，减小长连接的内存占用
-    async def remoteHandshake(self, payload: dict) -> tuple:
+
+    async def remote_handshake(self, payload: dict) -> tuple:
         '''打开一个连接之前的预协商'''
+
         try:
             with Block(self.key, payload) as block:
-                response = await self.__exchangeBlock(copy.copy(block.blockBytes))
+                response = await self.__exchange_block(copy.copy(block.blockBytes))
 
             # block = Block(self.key, payload)
             # response = await self.__exchangeBlock(copy.copy(block.blockBytes))
             # del block
 
-            rtn = None
-            responseBlock = Block.fromBytes(self.key, response)
+            response_block = Block.fromBytes(self.key, response)
 
-            bindAddress, bindPort = responseBlock.payload['bindAddress'], responseBlock.payload['bindPort']
-            self.logger.debug(f'预协商成功')
-            if (bindAddress == '') or (bindPort == 0):
+            bind_address, bind_port = response_block.payload[
+                'bind_address'], response_block.payload['bind_port']
+            self.logger.debug('预协商成功')
+            if (bind_address == '') or (bind_port == 0):
                 raise RemoteClientError('远程的连接建立失败')
 
-            rtn = bindAddress, bindPort
-            self.logger.debug(f'远程已创建连接，地址：{bindAddress}，端口：{bindPort}')
-
-        except ConnectionResetError as e:
-            self.logger.debug(f'远程连接关闭')
-            await self.remoteClose()
-
-        except DecryptError as e:
-            self.logger.debug(f'预协商解密时发生错误 {e}')
-            await self.remoteClose()
-
-        except Exception as e:
-            self.logger.debug(f'{e}')
-            await self.remoteClose()
-
-        finally:
-            """不关闭连接"""
+            rtn = bind_address, bind_port
+            self.logger.debug(f'远程已创建连接，地址：{bind_address}，端口：{bind_port}')
             return rtn
 
-    async def remoteClose(self) -> None:
-        if not self.remoteWriter:
+        except ConnectionResetError:
+            self.logger.debug(f'远程连接关闭')
+            await self.remote_close()
+            return None, None
+
+        except DecryptError as error:
+            self.logger.debug(f'预协商解密时发生错误 {error}')
+            await self.remote_close()
+            return None, None
+
+        except Exception as error:
+            self.logger.warning(f'{error}')
+            await self.remote_close()
+            return None, None
+
+    async def remote_close(self) -> None:
+        """关闭远程的连接"""
+        if not self.remote_writer:
             self.logger.warning('无法关闭一个不存在的远程连接')
             return
-        self.remoteWriter.close()
-        await self.remoteWriter.wait_closed()
+        self.remote_writer.close()
+        await self.remote_writer.wait_closed()
         self.logger.info('远程连接已关闭')
 
-    async def __exchangeBlock(self, raw: bytes) -> bytes:
+    async def __exchange_block(self, raw: bytes) -> bytes:
         '''远程的连接预协商，self.reader和writer初始化'''
-        self.remoteReader, self.remoteWriter = await self.__connect()
+        self.remote_reader, self.remote_writer = await self.__connect()
 
-        self.remoteWriter.write(raw)
-        await self.remoteWriter.drain()
-        rtn = await self.remoteReader.read(4096)
+        self.remote_writer.write(raw)
+        await self.remote_writer.drain()
+        rtn = await self.remote_reader.read(4096)
 
         return rtn
 
     async def __connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         return await asyncio.open_connection(
-            self.remoteAddr, self.remotePort,
+            self.remote_addr, self.remote_port,
             ssl=True)
 
 

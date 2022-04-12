@@ -78,7 +78,7 @@ class Cryptor():
 class Block():
     """安全区块
     """
-    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_Block__crpto'
+    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_crpto'
     
     @classmethod
     def fromBytes(cls, key: Key, b: bytes) -> 'Block':
@@ -113,13 +113,13 @@ class Block():
         self.key = key.keyString
         self.payload = payload
         self.timestamp = int(time.time())
-        self.__crpto = Cryptor(key.keyBytes)
+        self._crpto = Cryptor(key.keyBytes)
         pass
     
     @property
     def blockBytes(self) -> bytes:
         """自我加密后，返回ukp的字节串"""
-        rtn = self.__crpto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
+        rtn = self._crpto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
         return rtn
     
     def __enter__(self) -> 'Block':
