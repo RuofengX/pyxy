@@ -1,4 +1,4 @@
-Aisle @ file:///home/ruofeng/pyxy/lib/Aisle-0.6.0.tar.gz
+lib/Aisle-0.6.0.tar.gz
 astroid==2.11.2
 cffi==1.15.0
 commonmark==0.9.1
