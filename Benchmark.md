@@ -1,3 +1,0 @@
-# Benchmark result
-
-Current vision: 

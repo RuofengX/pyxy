@@ -50,19 +50,20 @@ def stress_test(n: int):
     print(f'本轮耗时{end - start:.2}秒')
     
         
-def stress_test_loop(n: int):
+def stress_test_loop(n: int, times:int=5):
     """循环压测
     
     n: 一轮循环的请求总量
     """
-    while 1:
+    for i in range(times):
         stress_test(n)
         print('-'*20)
+        
         time.sleep(5)
                 
 if __name__ == '__main__':
     # sock_request_test()
-    stress_test_loop(100)
+    stress_test_loop(1000, 4)
     
     
 

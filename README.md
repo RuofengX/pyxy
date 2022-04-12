@@ -1,6 +1,20 @@
 # PyXy
 
 ## “朋友需要”
+
+- [PyXy](#pyxy)
+  - [“朋友需要”](#朋友需要)
+  - [Dependencies](#dependencies)
+  - [Before you run](#before-you-run)
+    - [Key](#key)
+    - [TLS Certificate](#tls-certificate)
+  - [Run server and client](#run-server-and-client)
+    - [Server side](#server-side)
+    - [Client side](#client-side)
+  - [Data safty](#data-safty)
+  - [Problemshooting](#problemshooting)
+  - [License](#license)
+  - [Develop](#develop)
 ---
 An async stream exchange program, writen in python, using asyncio.
 
@@ -12,8 +26,9 @@ This project is an open-source project, it is absolutely free to use, but you sh
 
 ## Dependencies
 
- *Python 3.7+* is needed, for safety reason and some asyncio future.  
- *Pypy* is also welcome. Actually the whole project is tested on pypy.
+ **Python 3.7+** is needed, for safety reason and some asyncio future.
+ **Pypy** is also welcome. Actually the whole project is tested on pypy.  
+ **Python 3.9** is recommended, which is the latest pypy version.  
 
  In most cases, you can use `pip install -r requirements/compatible.txt` to install all dependencies. If that doesn't work, please open an issue.  
  Using `venv` to creating a virtual environment is also recommended, it's all depended on you.
@@ -70,3 +85,8 @@ For now problemshooting is none, but if you have any problem, please open an iss
 
 GPLv3
 
+## Develop
+
+Linter: mypy, pylint is to confuse for this small program  
+System: Linux, for testing uvloop and other module purpose  
+Python interpreter: Python 3.9.12, using pypy for better performence and gently exiting.

@@ -3,8 +3,11 @@ from __future__ import annotations
 from typing import Any, Callable, Coroutine
 import gc
 import asyncio
-import objgraph  # TODO: 正式版删除
-import sys, os
+import sys
+import os
+import warnings
+
+import objgraph  # TODO: 内存参考，正式版删除
 
 from safe_block import Key
 from aisle import LogMixin
@@ -14,6 +17,10 @@ try:
     # 使用uvloop优化事件循环
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except ImportError:
+    if sys.platform == 'linux':
+        warnings.warn('''You are running this program on linux, which supports uvloop module. 
+                      Please consider install it by using command: 
+                          pip install -r requirements/with_uvloop.txt file''')
     pass
 
 
@@ -116,13 +123,13 @@ class StreamBase(LogMixin):
 
             self.total_conn_count += 1
             self.current_conn_count += 1
-            self.logger.debug(f'开始处理新的连接')
+            self.logger.debug('开始处理新的连接')
             self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
 
             rtn = await coro(self, *args, **kwargs)
 
             self.current_conn_count -= 1
-            self.logger.debug(f'连接处理完毕')
+            self.logger.debug('连接处理完毕')
             self.logger.warning(f'当前并发连接数: {self.current_conn_count}')
 
             if self.current_conn_count == 0:
