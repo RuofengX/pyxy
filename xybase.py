@@ -18,7 +18,7 @@ try:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except ImportError:
     if sys.platform == 'linux':
-        warnings.warn('''You are running this program on linux, which supports uvloop module. 
+        warnings.warn('''You see this warning because you are running this program on linux, which supports uvloop module. 
                       Please consider install it by using command: 
                           pip install -r requirements/with_uvloop.txt file''')
     pass
