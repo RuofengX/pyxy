@@ -40,11 +40,14 @@ def stress_test(n: int):
     
     n: 请求总量
     """
+    start = time.time()
     # pool = ProcessPoolExecutor(max_workers=60)  # 60进程，最大并发量
     pool = ThreadPoolExecutor(max_workers=1000)  # 1000线程，最大并发量
     for i in range(n):
         pool.submit(sock_request_test)
     pool.shutdown(wait=True)
+    end = time.time()
+    print(f'本轮耗时{end - start:.2}秒')
     
         
 def stress_test_loop(n: int):
@@ -58,8 +61,8 @@ def stress_test_loop(n: int):
         time.sleep(5)
                 
 if __name__ == '__main__':
-    sock_request_test()
-    stress_test_loop(5000)
+    # sock_request_test()
+    stress_test_loop(100)
     
     
 

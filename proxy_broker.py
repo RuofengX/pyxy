@@ -59,7 +59,7 @@ class SockRelay(StreamBase, LogMixin):
         except KeyboardInterrupt:
             return
 
-    async def start_sock_server(self, backlog=64) -> None:
+    async def start_sock_server(self, backlog=512) -> None:
         """启动Socks5服务器
         
         backlog: 最大本地连接数。在客户端上，一般设置的小一点以节省内存占用。
