@@ -10,8 +10,8 @@ def sock_request_test(sim_conn_lost: bool = False) -> None:
         s = socks.socksocket()
     
         s.set_proxy(socks.SOCKS5, 'localhost', 9011, username='username', password='password')
-        s.connect(('www.baidu.com', 80))
-        s.sendall(b'HEAD / HTTP/1.1\r\nHost: www.baidu.com\r\n\r\n')
+        s.connect(('docs.python.org', 80))  # HACK: www.baidu.com不会自己关闭连接！！！！！！！！！！！
+        s.sendall(b'HEAD / HTTP/1.1\r\nHost: docs.python.org\r\n\r\n')
         
         response = b''
         while 1:
@@ -47,7 +47,7 @@ def stress_test(n: int):
         pool.submit(sock_request_test)
     pool.shutdown(wait=True)
     end = time.time()
-    print(f'本轮耗时{end - start:.2}秒')
+    print(f'本轮耗时{end - start}秒')
     
         
 def stress_test_loop(n: int, times:int=5):
@@ -59,11 +59,12 @@ def stress_test_loop(n: int, times:int=5):
         stress_test(n)
         print('-'*20)
         
-        time.sleep(5)
+        time.sleep(15)
                 
 if __name__ == '__main__':
     # sock_request_test()
-    stress_test_loop(1000, 4)
+    # time.sleep(1)
+    stress_test_loop(1000, 1)
     
     
 
