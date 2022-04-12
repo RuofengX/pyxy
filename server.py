@@ -136,8 +136,8 @@ class Server(StreamBase):
         else:
             # 接收
             try:
-                request = await reader.read(4096)
-                block = Block.fromBytes(self.key, request)
+                response = await reader.read(4096)
+                block = Block.fromBytes(self.key, response)
                 true_ip = block.payload['ip']
                 true_domain = block.payload['domain']
                 true_port = block.payload['port']
