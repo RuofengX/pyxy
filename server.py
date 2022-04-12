@@ -102,7 +102,7 @@ class Server(StreamBase):
             logger.warning(f'System fail connection > {error}')
 
         except Exception as error:
-            logger.error(f"Unkown error > {type(error)} {error}")
+            logger.error(f"Unknown error > {type(error)} {error}")
 
         finally:
             try:
@@ -136,8 +136,8 @@ class Server(StreamBase):
         else:
             # 接收
             try:
-                requeset = await reader.read(4096)
-                block = Block.fromBytes(self.key, requeset)
+                request = await reader.read(4096)
+                block = Block.fromBytes(self.key, request)
                 true_ip = block.payload['ip']
                 true_domain = block.payload['domain']
                 true_port = block.payload['port']

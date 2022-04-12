@@ -4,7 +4,6 @@
 
 - [PyXy](#pyxy)
   - [“朋友需要”](#朋友需要)
-  - [- Develop](#--develop)
   - [Dependencies](#dependencies)
   - [Before you run](#before-you-run)
     - [Key](#key)
@@ -16,8 +15,11 @@
   - [Troubleshooting](#troubleshooting)
   - [License](#license)
   - [Develop](#develop)
+
+
 ---
-An async stream exchange program, written in python, using asyncio.
+
+An async stream tunnel program, written in python, using asyncio.
 
 This project is an open-source project, it is absolutely free to use, but you should be aware of the following:
 - Do not use it for illegal(in any country or region) purposes.

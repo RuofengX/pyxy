@@ -53,7 +53,7 @@ class Key():
             
 
 
-class Cryptor():
+class Crypto():
     __slots__ = ['cipher', 'blockSize']
     
     
@@ -78,7 +78,7 @@ class Cryptor():
 class Block():
     """安全区块
     """
-    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_crpto'
+    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_crypto'
     
     @classmethod
     def fromBytes(cls, key: Key, b: bytes) -> 'Block':
@@ -90,8 +90,8 @@ class Block():
         Raises:
             DecryptError: 解密错误，解密失败
         """
-        crpto = Cryptor(key.keyBytes)
-        rebuildDict = json.loads(crpto.decrypt(b).decode('utf-8'))
+        crypto = Crypto(key.keyBytes)
+        rebuildDict = json.loads(crypto.decrypt(b).decode('utf-8'))
         vTime = rebuildDict['timestamp'] - int(time.time())  # 验证时间是否大于10秒
         if vTime >= 10:
             raise DecryptError('时间戳误差大于10秒')
@@ -113,13 +113,13 @@ class Block():
         self.key = key.keyString
         self.payload = payload
         self.timestamp = int(time.time())
-        self._crpto = Cryptor(key.keyBytes)
+        self._crypto = Crypto(key.keyBytes)
         pass
     
     @property
     def blockBytes(self) -> bytes:
         """自我加密后，返回ukp的字节串"""
-        rtn = self._crpto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
+        rtn = self._crypto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
         return rtn
     
     def __enter__(self) -> 'Block':

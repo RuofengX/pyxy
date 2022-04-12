@@ -61,7 +61,7 @@ class SocksProxy(LogMixin, StreamRequestHandler):
         
         #TODO: address_type == 4  # IPv6
         
-        port = struct.unpack('!H', self.connection.recv(2))[0]  # 对单元素typle切片，返回一个int
+        port = struct.unpack('!H', self.connection.recv(2))[0]  # 对单元素tuple切片，返回一个int
         
         
         # reply
