@@ -30,8 +30,10 @@ class Server(StreamBase):
         server = await asyncio.start_server(self.handler,
                                             addr,
                                             9190,
+                                            limit=4096,  # 创建的流的缓冲大小
                                             ssl=self.safe_context,
-                                            backlog=backlog)
+                                            backlog=backlog
+                                            )
         self.logger.warning(f"Server starting at {addr}:{port}")
         async with server:
             await server.serve_forever()
@@ -129,7 +131,7 @@ class Server(StreamBase):
         if payload:
             # 发送
             request = Block(self.key, payload)
-            writer.write(request.blockBytes)
+            writer.write(request.block_bytes)
             await writer.drain()
             return
 
@@ -137,7 +139,7 @@ class Server(StreamBase):
             # 接收
             try:
                 response = await reader.read(4096)
-                block = Block.fromBytes(self.key, response)
+                block = Block.from_bytes(self.key, response)
                 true_ip = block.payload['ip']
                 true_domain = block.payload['domain']
                 true_port = block.payload['port']

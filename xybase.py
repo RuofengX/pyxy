@@ -7,7 +7,7 @@ import sys
 import os
 import warnings
 
-import objgraph  # TODO: 内存参考，正式版删除
+import objgraph  # TODO: 内存参考，正式版将会删除
 
 from safe_block import Key
 from aisle import LogMixin
@@ -84,6 +84,7 @@ class StreamBase(LogMixin):
         debugCount = 0
         self.logger.debug(f'开始拷贝流，debug：{debug}')
         while 1:
+            # HACK: 主要性能瓶颈
             debugCount += 1
             try:
 
@@ -91,9 +92,14 @@ class StreamBase(LogMixin):
                     break
 
                 data = await asyncio.wait_for(
-                    r.read(4096),  # 如果仅仅使用read的话，循环会一直卡在await
-                    timeout=2.05  # 大多数情况下，这个值应该是比较合适的
+                    r.read(4096),  
+                    timeout=2.05  # 超过2.05秒的未活动连接会自动断开
                 )
+                
+                # 不进行超时检测，会导致连接一直保持，直到某一方的下层连接超时断开
+                # 例如www.baidu.com:80不会断开连接，导致大量空连接堆积造成性能下降
+                # data = await r.read(4096)  
+
                 if data == b'' and r.at_eof():
                     break
                 # self.logger.debug(f'{r.at_eof()}')
@@ -132,12 +138,11 @@ class StreamBase(LogMixin):
 
             self.current_conn_count -= 1
             self.logger.debug('连接处理完毕')
-            self.logger.warning(f'当前并发连接数: {self.current_conn_count}')
+            self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
 
             if self.current_conn_count == 0:
                 objgraph.show_growth(shortnames=False)  # TODO: 正式版删除
                 print('-------------------')
-                # TODO: 内存泄漏问题
 
                 # 仅当当前连接数为0时，才释放内存，防止回收还在等待的协程
                 # gc.collect()

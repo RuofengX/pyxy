@@ -70,6 +70,7 @@ class SockRelay(StreamBase, LogMixin):
 
         server = await asyncio.start_server(
             self.local_sock_handle, self.sock_proxy_addr, self.sock_proxy_port,
+            limit=4096,
             backlog=backlog)
 
         addr = server.sockets[0].getsockname()
