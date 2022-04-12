@@ -4,9 +4,17 @@ from typing import Any, Callable, Coroutine
 import gc
 import asyncio
 import objgraph  # TODO: 正式版删除
+import sys, os
 
 from safe_block import Key
 from aisle import LogMixin
+
+try:
+    import uvloop
+    # 使用uvloop优化事件循环
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+except ImportError:
+    pass
 
 
 class StreamBase(LogMixin):

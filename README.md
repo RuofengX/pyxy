@@ -15,8 +15,10 @@ This project is an open-source project, it is absolutely free to use, but you sh
  *Python 3.7+* is needed, for safety reason and some asyncio future.  
  *Pypy* is also welcome. Actually the whole project is tested on pypy.
 
- In most cases, you can use `pip install -r requirements.txt` to install all dependencies. If that doesn't work, please open an issue.  
+ In most cases, you can use `pip install -r requirements/compatible.txt` to install all dependencies. If that doesn't work, please open an issue.  
  Using `venv` to creating a virtual environment is also recommended, it's all depended on you.
+
+ If you are using linux system, OR you could makesure that your system could use uvloop module, you can use `pip install -r requirements/with_uvloop.txt` to install all dependencies and uvloop module, which would fastern up the program.
 
 ## Before you run
 
