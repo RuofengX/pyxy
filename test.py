@@ -5,6 +5,8 @@ import time
 
 import socks
 SUCCESS_LIST: list = []
+COUNT = 0
+
 def sock_request_test(sim_conn_lost: bool = False) -> None:
     try:
         s = socks.socksocket()
@@ -23,7 +25,10 @@ def sock_request_test(sim_conn_lost: bool = False) -> None:
             
             response += data
         
-        print(response)
+        # print(response)
+        global COUNT
+        COUNT += 1
+        print(f'{COUNT} Done!')
             
     except Exception as e:
         print(e)
@@ -42,7 +47,7 @@ def stress_test(n: int):
     """
     start = time.time()
     # pool = ProcessPoolExecutor(max_workers=60)  # 60进程，最大并发量
-    pool = ThreadPoolExecutor(max_workers=1000)  # 1000线程，最大并发量
+    pool = ThreadPoolExecutor(max_workers=16)
     for i in range(n):
         pool.submit(sock_request_test)
     pool.shutdown(wait=True)
@@ -58,13 +63,13 @@ def stress_test_loop(n: int, times:int=5):
     for i in range(times):
         stress_test(n)
         print('-'*20)
+        time.sleep(1)
         
-        time.sleep(15)
                 
 if __name__ == '__main__':
     # sock_request_test()
     # time.sleep(1)
-    stress_test_loop(1000, 1)
+    stress_test_loop(5, 1000)
     
     
 

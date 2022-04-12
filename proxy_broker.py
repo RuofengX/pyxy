@@ -11,7 +11,6 @@ from xybase import StreamBase
 # from memory_profiler import profile
 SOCKS_VERSION = 5
 
-# HACK: 客户端高并发结束之后，垃圾清理之后，会拒绝所有新的连接
 class SocksError(Exception):
     """Sock协议错误"""
 

@@ -73,50 +73,47 @@ class StreamBase(LogMixin):
     async def __copy(self,
                      r: asyncio.StreamReader,
                      w: asyncio.StreamWriter,
-                     debug: str = None
+                     debug: str = None,
+                     timeout=2.05
                      ) -> None:
         """异步流拷贝
 
         r: 源
         w: 目标
         debug: 无视即可
+        timeout: 定义了连接多久之后会被回收
         """
-        debugCount = 0
-        self.logger.debug(f'开始拷贝流，debug：{debug}')
+        # self.logger.debug(f'开始拷贝流，debug：{debug}')
         while 1:
             # HACK: 主要性能瓶颈
-            debugCount += 1
             try:
-
-                if r.at_eof():
-                    break
 
                 data = await asyncio.wait_for(
                     r.read(4096),  
-                    timeout=2.05  # 超过2.05秒的未活动连接会自动断开
+                    timeout=timeout
                 )
                 
                 # 不进行超时检测，会导致连接一直保持，直到某一方的下层连接超时断开
-                # 例如www.baidu.com:80不会断开连接，导致大量空连接堆积造成性能下降
+                # 例如www.baidu.com:80默认不会断开连接，导致大量空连接堆积造成性能下降
+                # 默认为60秒不活动断开
                 # data = await r.read(4096)  
 
-                if data == b'' and r.at_eof():
+                if not data:
                     break
                 # self.logger.debug(f'{r.at_eof()}')
                 w.write(data)
-                await w.drain()
+                # await w.drain()
 
-            except asyncio.TimeoutError:
-                self.logger.debug(f'连接超时')
-                break
+            # except asyncio.TimeoutError:
+            #     # self.logger.debug(f'连接超时')
+            #     break
 
-            except Exception as v:
-                self.logger.debug(f'远程连接中止 {v}')
+            except Exception:
                 break
 
         w.close()
         await w.wait_closed()
-        self.logger.debug(f'拷贝流结束，debug：{debug}')
+        # self.logger.debug(f'拷贝流结束，debug：{debug}')
         return
 
     @staticmethod
