@@ -72,7 +72,7 @@ class SockRelay(StreamBase, LogMixin):
                               ) -> None:
         """处理本地Socks5代理的请求"""
 
-        request_id = self.totalConnections - 1
+        request_id = self.total_conn_count - 1
         logger = self.logger.get_child(str(request_id))
         logger.debug(f'接收来自{writer.get_extra_info("peername")}的连接')
         try:
@@ -164,9 +164,9 @@ class SockRelay(StreamBase, LogMixin):
             await writer.drain()
 
             # 建立数据交换
-            if remote_client.remote_reader is None:
+            if not remote_client.remote_reader:
                 raise RemoteClientError('连接未建立')
-            if remote_client.remote_write is None:
+            if not remote_client.remote_writer:
                 raise RemoteClientError('连接未建立')
             
             if reply[1] == 0 and cmd == 1:

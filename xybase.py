@@ -1,9 +1,10 @@
 import gc
 import asyncio
+from typing import Any, Awaitable, Callable, Coroutine
 import objgraph  # TODO: 正式版删除
 
 
-from SafeBlock import Key
+from safe_block import Key
 from aisle import LogMixin
 
 
@@ -13,8 +14,8 @@ class StreamBase(LogMixin):
         
         gc.disable()  # 关闭垃圾回收
         
-        self.totalConnections = 0  # 一共处理了多少连接
-        self.currentConnections = 0  # 目前还在保持的连接数
+        self.total_conn_count = 0  # 一共处理了多少连接
+        self.current_conn_count = 0  # 目前还在保持的连接数
         
         with open('key', 'rt') as f:
             keyStr = f.readline().strip()
@@ -73,7 +74,7 @@ class StreamBase(LogMixin):
 
                 data = await asyncio.wait_for(
                     r.read(4096),  # 如果仅仅使用read的话，循环会一直卡在await
-                    timeout=2.05
+                    timeout=2.05  # 大多数情况下，这个值应该是比较合适的
                 )
                 if data == b'' and r.at_eof():
                     break
@@ -95,25 +96,26 @@ class StreamBase(LogMixin):
         return
 
     @staticmethod
-    def handlerDeco(coro: asyncio.coroutine) -> asyncio.coroutine:
+    def handlerDeco(coro: Callable[[Any, Any], Awaitable[Any]]) ->  Callable[[Any, Any], Awaitable[Any]]:
         """处理连接的装饰器
 
-        接收一个协程，在协程执行前自动增加连接计数，在协程执行后自动减少连接计数
+        接收一个用于连接处理的协程，一般名字叫handle。
+        在协程执行前自动增加连接计数，在协程执行后自动减少连接计数
         """
         async def handler(self: StreamBase, *args, **kwargs):
             
-            self.totalConnections += 1
-            self.currentConnections += 1
-            self.logger.debug(f'当前连接数: {self.currentConnections}')
+            self.total_conn_count += 1
+            self.current_conn_count += 1
+            self.logger.debug(f'当前连接数: {self.current_conn_count}')
             
             
             rtn = await coro(self, *args, **kwargs)
             
             
-            self.currentConnections -= 1
-            self.logger.info(f'当前连接数: {self.currentConnections}')
+            self.current_conn_count -= 1
+            self.logger.info(f'当前连接数: {self.current_conn_count}')
             
-            if self.currentConnections == 0:
+            if self.current_conn_count == 0:
                 objgraph.show_growth(shortnames=False)  # TODO: 正式版删除
                 print('-------------------')
                 # TODO: 内存泄漏问题
@@ -121,7 +123,7 @@ class StreamBase(LogMixin):
                 # 仅当当前连接数为0时，才释放内存，防止回收还在等待的协程
                 # gc.collect()
                 
-                self.logger.warning(f'垃圾回收完成，当前内存状态\n{gc.get_stats(memory_pressure=False)}')
+                self.logger.warning(f'垃圾回收完成，当前内存状态\n{gc.get_stats()}')
                 # objgraph.show_growth()
                 # objgraph.show_growth()
                 

@@ -2,7 +2,7 @@
 import asyncio
 import socket
 import ssl
-from SafeBlock import Block, DecryptError
+from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
 
@@ -34,8 +34,8 @@ class Server(StreamBase):
     @StreamBase.handlerDeco
     async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
-        # TODO: FOR DEBUG，需要单独做到线程中
-        request_id = self.totalConnections
+        
+        request_id = self.total_conn_count
         logger = self.logger.get_child(f'{request_id}')
         try:
             # 请求处理主体
@@ -68,8 +68,8 @@ class Server(StreamBase):
 
             finally:
                 await self.__exchange_block(reader, writer, {
-                    'bindAddress': bind_address,
-                    'bindPort': bind_port
+                    'bind_address': bind_address,
+                    'bind_port': bind_port
                 })
 
             # 4. 开始转发

@@ -4,7 +4,7 @@ import random
 import time
 
 import socks
-SUCCESS_LIST = []
+SUCCESS_LIST: list = []
 def sockResuestTest():
     try:
         s = socks.socksocket()
@@ -41,10 +41,10 @@ def stressTest(n: int):
             
                 
 if __name__ == '__main__':
-    # sockResuestTest()
-    while 1:
-        stressTest(500)
-        print('-'*20)
-        time.sleep(5)
+    sockResuestTest()
+    # while 1:
+    #     stressTest(500)
+    #     print('-'*20)
+    #     time.sleep(5)
 
 

@@ -4,7 +4,7 @@ Filename: client.py
 import asyncio
 import copy
 from typing import Tuple
-from SafeBlock import Block, DecryptError
+from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
 
@@ -72,7 +72,7 @@ class Client(StreamBase):
             return None, None
 
         except Exception as error:
-            self.logger.debug(f'{error}')
+            self.logger.warning(f'{error}')
             await self.remote_close()
             return None, None
 
