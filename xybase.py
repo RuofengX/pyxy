@@ -16,11 +16,12 @@ try:
     import uvloop
     # 使用uvloop优化事件循环
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-except ImportError:
+except ImportError as err:
     if sys.platform == 'linux':
-        warnings.warn('''You see this warning because you are running this program on linux, which supports uvloop module. 
-                      Please consider install it by using command: 
-                          pip install -r requirements/with_uvloop.txt file''')
+        warnings.warn('''uvloop loaded fail. You see this warning because you are running this program on linux, which may supports uvloop module.
+                      uvloop will bring the whole program much faster, please consider install it.
+                      Detail debug info: {err}
+                      ''')
     pass
 
 
