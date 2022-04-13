@@ -1,6 +1,3 @@
-"""
-Filename : client.py
-"""
 import socket
 from struct import pack, unpack
 import asyncio
