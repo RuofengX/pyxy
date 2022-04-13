@@ -11,12 +11,14 @@ class Server(StreamBase):
     """服务器对象"""
 
     def __init__(self, config: PyxyConfig):
-        super().__init__()
+        self.key_string = config.general['key']
+        super().__init__(self.key_string)
         self.config = config.server
         # 获取安全环境
         self.safe_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.safe_context.load_cert_chain(
             certfile=self.config['crt_file'], keyfile=self.config['key_file'])
+        
         # You can load your own cert and key files here.
 
     async def start(self):
@@ -44,43 +46,49 @@ class Server(StreamBase):
         
         request_id = self.total_conn_count
         logger = self.logger.get_child(f'{request_id}')
-        try:
-            # 请求处理主体
+        # 请求处理主体
 
             # 1. 预协商
+        try:
             true_ip, true_domain, true_port = await self.__exchange_block(reader, writer)
             logger.info(f'Get request > {true_ip}|{true_domain}:{true_port}')
+        except Exception as err:
+            logger.warning(f'Protocol fail > {type(err)} {err}')
+            return
+        
+        # 2. 格式化目标地址
+        if (not true_ip) and (not true_domain):
+            logger.error('NO IP OR DOMAIN')
+            return
 
-            # 2. 格式化目标地址
-            if (not true_ip) and (not true_domain):
-                logger.error('NO IP OR DOMAIN')
-                raise ValueError('NO IP OR DOMAIN')
+        if true_domain:
+            true_ip = socket.gethostbyname(true_domain)
+        logger.info(
+            f'Start true connect > {true_ip}|{true_domain}:{true_port}')
 
-            if true_domain:
-                true_ip = socket.gethostbyname(true_domain)
-            logger.info(
-                f'Start true connect > {true_ip}|{true_domain}:{true_port}')
+    
 
-            # 3. 尝试建立真实连接
-            bind_address, bind_port = '', 0
-            true_reader, true_writer = None, None
-            try:
-                true_reader, true_writer = await asyncio.open_connection(true_ip, true_port)
+        # 3. 尝试建立真实连接
+        bind_address, bind_port = '', 0
+        try:
+            true_reader, true_writer = await asyncio.open_connection(true_ip, true_port)
 
-                bind_address, bind_port = true_writer.get_extra_info(
-                    'sockname')
+            bind_address, bind_port = true_writer.get_extra_info(
+                'sockname')
 
-            except Exception as error:
-                logger.warning(f'Unexpected error > {type(error)}:{error}')
-                raise error
+        except Exception as error:
+            logger.warning(f'Unexpected error > {type(error)}:{error}')
+            raise error
 
-            finally:
-                await self.__exchange_block(reader, writer, {
-                    'bind_address': bind_address,
-                    'bind_port': bind_port
-                })
+        finally:
+            await self.__exchange_block(reader, writer, {
+                'bind_address': bind_address,
+                'bind_port': bind_port
+            })
 
-            # 4. 开始转发
+
+        # 4. 开始转发
+        try:
             await self.exchange_stream(
                 reader,
                 writer,
@@ -88,7 +96,7 @@ class Server(StreamBase):
                 true_writer
             )
 
-        # 全部流程的异常处理
+        # 第一步之后的异常处理
         except socket.gaierror as error:
             logger.error(f'DNS failure > {error}')
 
@@ -128,7 +136,7 @@ class Server(StreamBase):
         else:
             # 接收
             try:
-                response = await reader.read(4096)
+                response = await reader.read(4096)  # TODO: 引入超时
                 block = Block.from_bytes(self.key, response)
                 true_ip = block.payload['ip']
                 true_domain = block.payload['domain']
