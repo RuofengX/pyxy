@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Callable, Coroutine
+from typing import Any, Callable, Coroutine, Union
 import gc
 import asyncio
 import sys
@@ -174,13 +174,17 @@ class StreamBase(LogMixin):
 
         return handler
 
-    async def try_close(self, w: asyncio.StreamWriter, timeout: int=None) -> None:
+    async def try_close(self, w: Union[asyncio.StreamWriter, None], timeout: int=None) -> None:
             """尝试关闭连接，直到连接关闭，或超时
             
             w: asyncio的流写入对象
             timeout: 可选，如果不为None则会给w.wait_closed()协程指定一个超时时长
             
             捕获所有异常"""
+            if w is None:
+                self.logger.info('需要关闭的套接字不存在')
+                return            
+            
             try:
                 if not w.is_closing():
                     w.close()
