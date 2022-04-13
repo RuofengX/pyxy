@@ -22,7 +22,7 @@ except ImportError as err:
     if sys.platform == 'linux':
         warnings.warn(f'''uvloop loaded fail. You see this warning because you are running this program on linux, which may supports uvloop module.
                       uvloop will bring the whole program much faster, please consider install it.
-                      Detail debug info: {err}
+                      Detail debug info: \n{err}
                       ''')
     pass
     # TODO: pypy3.9暂未支持uvloop，参考链接 https://github.com/PyO3/pyo3/issues/2137
@@ -44,7 +44,7 @@ class StreamBase(LogMixin):
         self.key = Key(keyStr)
 
         super().__init__(*args, **kwargs)
-        self.logger.set_level('WARNING')
+        self.logger.set_level('WARNING')  # Change Log level here!! 在这里更改日志等级！！
 
     async def exchange_stream(self,
                               localReader: asyncio.StreamReader,
