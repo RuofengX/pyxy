@@ -31,7 +31,7 @@ class StreamBase(LogMixin):
 
     def __init__(self, *args, **kwargs):
 
-        # gc.disable()
+        gc.disable()
 
         self.total_conn_count = 0  # 一共处理了多少连接
         self.current_conn_count = 0  # 目前还在保持的连接数
