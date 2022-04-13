@@ -212,7 +212,7 @@ class SockRelay(StreamBase, LogMixin):
             try:
                 await remote_client.remote_close()
             except Exception as error:
-                logger.error(f'关闭远程连接失败 > {error}')
+                logger.error(f'关闭远程连接失败 > {type(error)} {error}')
 
             logger.info('请求处理结束')
 
