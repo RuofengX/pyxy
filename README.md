@@ -6,7 +6,6 @@
   - [“朋友需要”](#朋友需要)
   - [Dependencies](#dependencies)
   - [Before you run](#before-you-run)
-    - [Key](#key)
     - [TLS Certificate](#tls-certificate)
   - [Run server and client](#run-server-and-client)
     - [Server side](#server-side)
@@ -45,9 +44,6 @@ Tested environment is `CPython3.8.10` with `uvloop` module.
 
 ## Before you run
 
-### Key
-There is an AES key using by both client and server. If you don't have a key file, running `server.py` will generate one. You should copy that file from server to you local device.  
-
 ### TLS Certificate
 
 The best solution is register a domain and apply a SSL certificate.  
@@ -57,15 +53,21 @@ There are also some other ways to bypass this problem, but it's not recommended.
 
 ## Run server and client
 
+At first time you run `python3 server.py` or `python3 proxy_broker.py`, the program will go into error. But don't worry, you just need to change the generated config file `config.toml`. Set everything in it correctly according to `config.example`. You should also make sure that the config on server and local are same. And, that's it!
+
 ### Server side
-Running these code on a server with a domain name and a SSL certificate.  
+Running these code on a server with a domain name and a SSL certificate, which is configured in config.toml file.  
 Don't forget to leave the firewall open for this program. The default port is `9190`.  
+
 ```bash
 python3 server.py
 ```
+
 These would run the whole server.  
 
 ### Client side
+
+Copy the config file from server, and then run:  
 
 ```bash
 python3 proxy_broker.py

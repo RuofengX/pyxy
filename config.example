@@ -37,7 +37,7 @@ backlog = 1024
 [client]
 
 # Socks5监听的网卡地址
-socks5_address = '127.0.0.1'
+socks5_address = '0.0.0.0'
 
 # Socks5监听的端口
 socks5_port = 9011
