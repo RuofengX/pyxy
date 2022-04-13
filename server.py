@@ -63,6 +63,7 @@ class Server(StreamBase):
 
             # 3. 尝试建立真实连接
             bind_address, bind_port = '', 0
+            true_reader, true_writer = None, None
             try:
                 true_reader, true_writer = await asyncio.open_connection(true_ip, true_port)
 
