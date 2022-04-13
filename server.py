@@ -107,21 +107,10 @@ class Server(StreamBase):
             logger.error(f"Unknown error > {type(error)} {error}")
 
         finally:
-            try:
-                # 尝试关闭和客户端的连接
-                writer.close()
-                await writer.wait_closed()
-            except Exception as error:
-                self.logger.debug(
-                    f'Close client connection error > {type(error)}:{error}')
-
-            try:
-                # 尝试关闭真实连接
-                true_writer.close()
-                await true_writer.wait_closed()
-            except Exception as error:
-                self.logger.debug(
-                    f'Close true connection error > {type(error)}:{error}')
+            await asyncio.gather(
+                self.try_close(true_writer),
+                self.try_close(writer)
+            )
 
             # 收尾工作
             logger.debug('Request Handle End')

@@ -3,7 +3,7 @@ Filename: client.py
 """
 import asyncio
 import copy
-from typing import Tuple
+from typing import Tuple, Coroutine
 from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
@@ -72,15 +72,12 @@ class Client(StreamBase):
             await self.remote_close()
             return None, None
 
-    async def remote_close(self) -> None:
-        """关闭远程的连接"""
-        if not self.remote_writer:
-            self.logger.warning('无法关闭一个不存在的远程连接')
-            return
-        self.remote_writer.close()
-        await self.remote_writer.wait_closed()
-        self.logger.info('远程连接已关闭')
-
+    async def remote_close(self) -> Coroutine[None, None, None]:
+        """关闭远程的连接
+        
+        捕获所有异常"""
+        await self.try_close(self.remote_writer)
+            
     async def __exchange_block(self, raw: bytes) -> bytes:
         '''远程的连接预协商，self.reader和writer初始化'''
         self.remote_reader, self.remote_writer = await self.__connect()

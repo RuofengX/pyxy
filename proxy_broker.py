@@ -163,10 +163,10 @@ class SockRelay(StreamBase, LogMixin):
                 'port': true_port
             }
             )
-            if not response is None:
-                bind_address, bind_port = response
-            else:
+            bind_address, bind_port = response
+            if bind_address is None or bind_port is None:
                 raise RemoteClientError('远程服务器返回错误')
+            
             bind_address_bytes = socket.inet_aton(bind_address)
             bind_address_int = unpack('!I', bind_address_bytes)[0]
 
@@ -199,25 +199,15 @@ class SockRelay(StreamBase, LogMixin):
             logger.warning(f'OS错误 > {error}')
 
         except Exception as error:
-            logger.warning(f'未知错误 > {error}')
+            logger.warning(f'未知错误 > {type(error)} {error}')
 
         finally:
-            try:
-                writer.close()
-                await writer.wait_closed()
-                logger.debug('本地连接已关闭')
-            except Exception as error:
-                logger.error(f'关闭本地连接失败 > {type(error)} {error}')
-
-            try:
-                await remote_client.remote_close()
-            except Exception as error:
-                logger.error(f'关闭远程连接失败 > {type(error)} {error}')
+            await asyncio.gather(
+                self.try_close(writer),
+                remote_client.remote_close()
+            )
 
             logger.info('请求处理结束')
-
-            # DEBUG
-            # objgraph.show_growth()
 
 
 if __name__ == '__main__':
