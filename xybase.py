@@ -127,13 +127,14 @@ class StreamBase(LogMixin):
                 #     break
 
                 except Exception:
+                    # 可能有ConnectResetError
                     break
 
             
         self.logger.debug(f'开始拷贝流，debug：{debug}')
         
-        w.close()
-        await w.wait_closed()
+        await self.try_close(w)
+        
         self.logger.debug(f'拷贝流结束，debug：{debug}')
         return
 
@@ -171,3 +172,35 @@ class StreamBase(LogMixin):
             return rtn
 
         return handler
+
+    async def try_close(self, w: asyncio.StreamWriter, timeout: int=None) -> Coroutine[None, None, None]:
+            """尝试关闭连接，直到连接关闭，或超时
+            
+            w: asyncio的流写入对象
+            timeout: 可选，如果不为None则会给w.wait_closed()协程指定一个超时时长
+            
+            捕获所有异常"""
+            try:
+                if not w.is_closing():
+                    w.close()
+                
+                if timeout:
+                    asyncio.wait_for(w.wait_closed(), timeout)
+                else:
+                    await w.wait_closed()
+                    
+                self.logger.info('远程连接已关闭')
+                
+            except asyncio.TimeoutError:
+                self.logger.warning('在关闭连接时超时')
+                
+            except BrokenPipeError:
+                # 连接已经被关闭
+                pass
+            except ConnectionResetError:
+                # 连接被重置
+                pass
+            
+            except Exception as err:
+                self.logger.warning(f'在关闭连接时发生意外错误 > {type(err)} {err}')
+    
