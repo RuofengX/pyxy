@@ -86,6 +86,9 @@ class StreamBase(LogMixin):
         # self.logger.debug(f'开始拷贝流，debug：{debug}')
         while 1:
             # HACK: 主要性能瓶颈
+            # 不适用logger进行日志操作以提升效能
+            # 捕获所有异常以减少逻辑判断
+            # 减少变量使用
             try:
 
                 data = await asyncio.wait_for(
@@ -93,16 +96,16 @@ class StreamBase(LogMixin):
                     timeout=timeout
                 )
                 
-                # 不进行超时检测，会导致连接一直保持，直到某一方的下层连接超时断开
+                # 不进行超时检测，会导致连接一直保持，直到某一方的下层连接超时断开（一般是60秒）
                 # 例如www.baidu.com:80默认不会断开连接，导致大量空连接堆积造成性能下降
-                # 默认为60秒不活动断开
                 # data = await r.read(4096)  
 
                 if not data:
                     break
                 # self.logger.debug(f'{r.at_eof()}')
+                
                 w.write(data)
-                # await w.drain()
+                await w.drain()  # 不应节省
 
             # except asyncio.TimeoutError:
             #     # self.logger.debug(f'连接超时')
@@ -112,7 +115,7 @@ class StreamBase(LogMixin):
                 break
 
         w.close()
-        await w.wait_closed()
+        await w.wait_closed()  # 不应节省
         # self.logger.debug(f'拷贝流结束，debug：{debug}')
         return
 
