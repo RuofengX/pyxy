@@ -30,15 +30,18 @@ This project is an open-source project, it is absolutely free to use, but you sh
 ## Dependencies
 
 **CPython 3.7+** is needed for safety reason and some asyncio future.  
-**Pypy3.7~3.8** is also welcome. The latest pypy3.9 didn't support uvloop yet. Since Pypy3.7 and above are not provided by apt on Debian-like system, it needs more manual install steps to achieve. To conclude, it's just like: Download pypy build -> Extract tarball -> Create symbol link in /usr/bin/ -> Run ensurepip -> Make venv dictionary -> Install requirements.
+**Pypy** is NOT welcome here since it's lack of support for uvloop. You can check these issues here:
+
+- https://github.com/PyO3/pyo3/issues/2137
+- https://github.com/MagicStack/uvloop/issues/380
 
 In most cases, you can use `pip install -r requirements/compatible.txt` to install all dependencies. If that doesn't work, please open an issue.  
- Using `venv` to creating a virtual environment is also recommended, it's all depended on you.
+Using `venv` to creating a virtual environment is also recommended, it's all depended on you.
 
 If you are using linux system, OR you could make sure that your system could use uvloop module, I **strongly** recommend you to use `pip install -r requirements/with_uvloop.txt` to install all dependencies and uvloop module, which would fasten up the program. You may also install build tools for building uvloop(if error occur when installing uvloop), which could use `sudo apt install build-essential` on Ubuntu to solve.  
 Uvloop will boost the program into a higher level, if you are running on weak ARM or little VPS server, MAKE SURE you are install uvloop, and the module is imported correctly.
 
-Recommend environment is `Pypy3.8` latest build with `uvloop` module, which is fully tested, and may be the fastest solution.
+Tested environment is `CPython3.8.10` with `uvloop` module.
 
 ## Before you run
 
@@ -73,6 +76,7 @@ These would run the whole server.
 ```bash
 python3 proxy_broker.py
 ```
+
 These would run the client. Client would opening a sock5 proxy listening on port 9011, if any connection comes, it would connect to server, and then forward the connection.
 
 ## Data safety
