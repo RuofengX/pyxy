@@ -207,7 +207,7 @@ class SockRelay(StreamBase, LogMixin):
                 await writer.wait_closed()
                 logger.debug('本地连接已关闭')
             except Exception as error:
-                logger.error(f'关闭本地连接失败 > {error}')
+                logger.error(f'关闭本地连接失败 > {type(error)} {error}')
 
             try:
                 await remote_client.remote_close()
