@@ -11,11 +11,12 @@ import objgraph  # TODO: 内存参考，正式版将会删除
 
 from safe_block import Key
 from aisle import LogMixin
-
+ENABLE_UVLOOP = False
 try:
     import uvloop
     # 使用uvloop优化事件循环
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    ENABLE_UVLOOP = True
 except ImportError as err:
     if sys.platform == 'linux':
         warnings.warn(f'''uvloop loaded fail. You see this warning because you are running this program on linux, which may supports uvloop module.
@@ -74,50 +75,66 @@ class StreamBase(LogMixin):
                      r: asyncio.StreamReader,
                      w: asyncio.StreamWriter,
                      debug: str = None,
-                     timeout=2.05
-                    # timeout=15
+                     timeout: int = None
                      ) -> None:
         """异步流拷贝
 
         r: 源
         w: 目标
         debug: 无视即可
-        timeout: 定义了连接多久之后会被回收
+        timeout: 定义了连接多久之后会被回收，如果使用了uvloop则无视该参数
         """
-        # self.logger.debug(f'开始拷贝流，debug：{debug}')
-        while 1:
-            # HACK: 主要性能瓶颈
-            # 不适用logger进行日志操作以提升效能
-            # 捕获所有异常以减少逻辑判断
-            # 减少变量使用
-            try:
+        # HACK: 减小循环内部逻辑使用量和变量数量，同时避免触发日志
+        if ENABLE_UVLOOP:
+            # 使用uvloop能大幅减小内存使用，将超时设置为TCP默认时间
+            while 1:
+                try:
 
-                data = await asyncio.wait_for(
-                    r.read(4096),  
-                    timeout=timeout
-                )
-                
-                # 不进行超时检测，会导致连接一直保持，直到某一方的下层连接超时断开（一般是60秒）
-                # 例如www.baidu.com:80默认不会断开连接，导致大量空连接堆积造成性能下降
-                # data = await r.read(4096)  
+                    data = await r.read(4096)  # 不进行超时测试，减少事件调度
+                    
+                    if not data:
+                        break
+                    w.write(data)
+                    await w.drain()  # 不应节省
 
-                if not data:
+                except Exception:
                     break
-                # self.logger.debug(f'{r.at_eof()}')
-                
-                w.write(data)
-                await w.drain()  # 不应节省
+            
+        else:
+            # 性能可能较弱
+            timeout = timeout  # 防止使用原生事件循环导致的高内存占用
+            while 1:
+                try:
 
-            # except asyncio.TimeoutError:
-            #     # self.logger.debug(f'连接超时')
-            #     break
+                    data = await asyncio.wait_for(
+                        r.read(4096),  
+                        timeout=timeout
+                    )
+                    
+                    # 不进行超时检测，会导致连接一直保持，直到某一方的下层连接超时断开（一般是60秒）
+                    # 例如www.baidu.com:80默认不会断开连接，导致大量空连接堆积造成性能下降
+                    # data = await r.read(4096)  
 
-            except Exception:
-                break
+                    if not data:
+                        break
+                    # self.logger.debug(f'{r.at_eof()}')
+                    
+                    w.write(data)
+                    await w.drain()  # 不应节省
 
+                # except asyncio.TimeoutError:
+                #     # self.logger.debug(f'连接超时')
+                #     break
+
+                except Exception:
+                    break
+
+            
+        self.logger.debug(f'开始拷贝流，debug：{debug}')
+        
         w.close()
-        await w.wait_closed()  # 不应节省
-        # self.logger.debug(f'拷贝流结束，debug：{debug}')
+        await w.wait_closed()
+        self.logger.debug(f'拷贝流结束，debug：{debug}')
         return
 
     @staticmethod
