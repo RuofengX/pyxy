@@ -6,6 +6,7 @@ import asyncio
 import sys
 import os
 import warnings
+from ssl import SSLError
 
 import objgraph  # TODO: 内存参考，正式版将会删除
 
@@ -199,6 +200,10 @@ class StreamBase(LogMixin):
                 pass
             except ConnectionResetError:
                 # 连接被重置
+                pass
+            
+            except SSLError:
+                # ssl连接错误，可能是上述错误导致的
                 pass
             
             except Exception as err:
