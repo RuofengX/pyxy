@@ -76,14 +76,8 @@ class Crypto():
 
 
 class Block():
-<<<<<<< HEAD:safe_block.py
-    """安全区块
-    """
-    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_crpto'
-=======
     """安全区块"""
     __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_crypto'
->>>>>>> dev:SafeBlock.py
     
     @classmethod
     def from_bytes(cls, key: Key, b: bytes) -> 'Block':
@@ -118,15 +112,6 @@ class Block():
         self.key = key.key_string
         self.payload = payload
         self.timestamp = int(time.time())
-<<<<<<< HEAD:safe_block.py
-        self._crpto = Cryptor(key.keyBytes)
-        pass
-    
-    @property
-    def blockBytes(self) -> bytes:
-        """自我加密后，返回ukp的字节串"""
-        rtn = self._crpto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
-=======
         self._crypto = Crypto(key.key_bytes)
         pass
     
@@ -134,7 +119,6 @@ class Block():
     def block_bytes(self) -> bytes:
         """自我加密后，返回ukpt的字节串"""
         rtn = self._crypto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
->>>>>>> dev:SafeBlock.py
         return rtn
     
     def __enter__(self) -> 'Block':
