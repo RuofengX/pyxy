@@ -14,7 +14,7 @@
   - [Data safety](#data-safety)
   - [Troubleshooting](#troubleshooting)
   - [License](#license)
-  - [Development](#development)
+  - [Development Guide](#development-guide)
 
 
 ---
@@ -94,6 +94,6 @@ For now troubleshooting is none, but if you have any problem, please open an iss
 
 GPLv3
 
-## Development
+## Development Guide
 
 If you want to get involved in, just fork this repo, and create a feature branch. Issue or PR is welcome here!  
