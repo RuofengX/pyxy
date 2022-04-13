@@ -96,6 +96,4 @@ GPLv3
 
 ## Development
 
-Git Branch: Dev
-Linter: mypy
-System: Linux, for testing uvloop and other module purpose  
+If you want to get involved in, just fork this repo, and create a feature branch. Issue or PR is welcome here!  
