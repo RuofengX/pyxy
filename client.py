@@ -29,12 +29,12 @@ class Client(StreamBase):
                  tag: str = None
                  ) -> None:
         super().__init__()
-        if tag is not None:
+        if tag:
             self.logger: SyncLogger = self.logger.getChild(f'{tag}')
         self.remote_addr = remoteAddr
         self.remote_port = remotePort
-        self.remote_reader:asyncio.StreamReader
-        self.remote_writer:asyncio.StreamWriter
+        self.remote_reader: asyncio.StreamReader
+        self.remote_writer: asyncio.StreamWriter
 
     # HACK: 需要优化内存，减小长连接的内存占用
 
@@ -43,13 +43,9 @@ class Client(StreamBase):
 
         try:
             with Block(self.key, payload) as block:
-                response = await self.__exchange_block(copy.copy(block.blockBytes))
+                response = await self.__exchange_block(copy.copy(block.block_bytes))
 
-            # block = Block(self.key, payload)
-            # response = await self.__exchangeBlock(copy.copy(block.blockBytes))
-            # del block
-
-            response_block = Block.fromBytes(self.key, response)
+            response_block = Block.from_bytes(self.key, response)
 
             bind_address, bind_port = response_block.payload[
                 'bind_address'], response_block.payload['bind_port']
@@ -98,6 +94,7 @@ class Client(StreamBase):
     async def __connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         return await asyncio.open_connection(
             self.remote_addr, self.remote_port,
+            # limit=4096,
             ssl=True)
 
 

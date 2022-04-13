@@ -19,16 +19,23 @@ class Server(StreamBase):
             certfile='./certs/pyxy.s-2.link_bundle.crt', keyfile='./certs/pyxy.s-2.link.key')
         # You can load your own cert and key files here.
 
-    async def start(self, addr: str, port):
-        """异步入口函数"""
+    async def start(self, addr: str, port, backlog: int=8192):
+        """异步入口函数
+        
+        addr: 连接监听地址
+        port: 连接监听端口
+        backlog: 监听队列长度，超过这个数量的并发连接将被拒绝
+        """
         self.logger: SyncLogger = self.logger.get_child(f'{addr}:{port}')
         server = await asyncio.start_server(self.handler,
                                             addr,
                                             9190,
+                                            # limit=4096,  # 创建的流的缓冲大小
                                             ssl=self.safe_context,
-                                            backlog=8192)
+                                            backlog=backlog
+                                            )
         self.logger.warning(f"Server starting at {addr}:{port}")
-        async with server:  # 需要学习async with
+        async with server:
             await server.serve_forever()
 
     @StreamBase.handlerDeco
@@ -97,7 +104,7 @@ class Server(StreamBase):
             logger.warning(f'System fail connection > {error}')
 
         except Exception as error:
-            logger.error(f"Unkown error > {type(error)} {error}")
+            logger.error(f"Unknown error > {type(error)} {error}")
 
         finally:
             try:
@@ -124,15 +131,15 @@ class Server(StreamBase):
         if payload:
             # 发送
             request = Block(self.key, payload)
-            writer.write(request.blockBytes)
+            writer.write(request.block_bytes)
             await writer.drain()
             return
 
         else:
             # 接收
             try:
-                requeset = await reader.read(4096)
-                block = Block.fromBytes(self.key, requeset)
+                response = await reader.read(4096)
+                block = Block.from_bytes(self.key, response)
                 true_ip = block.payload['ip']
                 true_domain = block.payload['domain']
                 true_port = block.payload['port']
