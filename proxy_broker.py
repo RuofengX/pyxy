@@ -69,7 +69,7 @@ class SockRelay(StreamBase, LogMixin):
 
         server = await asyncio.start_server(
             self.local_sock_handle, self.sock_proxy_addr, self.sock_proxy_port,
-            limit=4096,
+            # limit=4096,
             backlog=backlog)
 
         addr = server.sockets[0].getsockname()
@@ -207,12 +207,12 @@ class SockRelay(StreamBase, LogMixin):
                 await writer.wait_closed()
                 logger.debug('本地连接已关闭')
             except Exception as error:
-                logger.critical(f'关闭本地连接失败 > {error}')
+                logger.error(f'关闭本地连接失败 > {error}')
 
             try:
                 await remote_client.remote_close()
             except Exception as error:
-                logger.debug(f'关闭远程连接失败 > {error}')
+                logger.error(f'关闭远程连接失败 > {error}')
 
             logger.info('请求处理结束')
 

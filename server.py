@@ -30,7 +30,7 @@ class Server(StreamBase):
         server = await asyncio.start_server(self.handler,
                                             addr,
                                             9190,
-                                            limit=4096,  # 创建的流的缓冲大小
+                                            # limit=4096,  # 创建的流的缓冲大小
                                             ssl=self.safe_context,
                                             backlog=backlog
                                             )

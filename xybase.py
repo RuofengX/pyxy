@@ -31,7 +31,7 @@ class StreamBase(LogMixin):
 
     def __init__(self, *args, **kwargs):
 
-        gc.disable()  # 关闭垃圾回收
+        # gc.disable()
 
         self.total_conn_count = 0  # 一共处理了多少连接
         self.current_conn_count = 0  # 目前还在保持的连接数
@@ -74,7 +74,8 @@ class StreamBase(LogMixin):
                      r: asyncio.StreamReader,
                      w: asyncio.StreamWriter,
                      debug: str = None,
-                     timeout=2.05
+                    #  timeout=2.05
+                    timeout=15
                      ) -> None:
         """异步流拷贝
 

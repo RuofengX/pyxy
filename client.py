@@ -94,7 +94,7 @@ class Client(StreamBase):
     async def __connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         return await asyncio.open_connection(
             self.remote_addr, self.remote_port,
-            limit=4096,
+            # limit=4096,
             ssl=True)
 
 
