@@ -46,13 +46,7 @@ Tested environment is `CPython3.8.10` with `uvloop` module.
 ## Before you run
 
 ### Key
-There is an AES key using by both client and server. You must create a key file before everything run. A key file must be allocated in this program directory, and named `key`. The key file must be a plain text file, and only contain the key string.  
-Key string is a 32-byte string, and it's a hex string.
-
-For example, if you want to use a key string `12345678901234567890123456789012`, you should create a file named `key` in this program directory, and write the following content into it: `12345678901234567890123456789012`  
-With no space or newline.
-
-This key file will be used to create a `Key` object in module `SafeBlock`, you could check if you want to.
+There is an AES key using by both client and server. If you don't have a key file, running `server.py` will generate one. You should copy that file from server to you local device.  
 
 ### TLS Certificate
 

@@ -1,6 +1,7 @@
 wheel
 lib/Aisle-0.6.1.tar.gz
 pycryptodome
+toml
 
 # FOR TEST AND DEBUG
 pysocks

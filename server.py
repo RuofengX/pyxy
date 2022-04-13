@@ -5,36 +5,36 @@ import ssl
 from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
-
+from config_parse import PyxyConfig
 
 class Server(StreamBase):
     """服务器对象"""
 
-    def __init__(self):
+    def __init__(self, config: PyxyConfig):
         super().__init__()
-
+        self.config = config.server
         # 获取安全环境
         self.safe_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.safe_context.load_cert_chain(
-            certfile='./certs/pyxy.s-2.link_bundle.crt', keyfile='./certs/pyxy.s-2.link.key')
+            certfile=self.config['crt_file'], keyfile=self.config['key_file'])
         # You can load your own cert and key files here.
 
-    async def start(self, addr: str, port, backlog: int=8192):
+    async def start(self):
         """异步入口函数
         
         addr: 连接监听地址
         port: 连接监听端口
         backlog: 监听队列长度，超过这个数量的并发连接将被拒绝
         """
-        self.logger: SyncLogger = self.logger.get_child(f'{addr}:{port}')
+        self.logger: SyncLogger = self.logger.get_child(f"{self.config['ipv4_address']}:{self.config['port']}")
         server = await asyncio.start_server(self.handler,
-                                            addr,
-                                            9190,
+                                            self.config['ipv4_address'],
+                                            self.config['port'],
                                             # limit=4096,  # 创建的流的缓冲大小
                                             ssl=self.safe_context,
-                                            backlog=backlog
+                                            backlog=self.config['backlog'],
                                             )
-        self.logger.warning(f"Server starting at {addr}:{port}")
+        self.logger.warning(f"Server starting at {self.config['ipv4_address']}:{self.config['port']}")
         async with server:
             await server.serve_forever()
 
@@ -151,11 +151,9 @@ class Server(StreamBase):
 
 
 if __name__ == '__main__':
-    serverIPv4 = Server()
-    serverIPv6 = Server()
+    config = PyxyConfig()
+    
+    serverIPv4 = Server(config)
+    serverIPv6 = Server(config)
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(
-        asyncio.gather(
-            serverIPv4.start('0.0.0.0', 9190)
-        )
-    )
+    loop.run_until_complete(serverIPv4.start())

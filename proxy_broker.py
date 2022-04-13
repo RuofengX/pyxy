@@ -1,12 +1,10 @@
-"""
-Filename : client.py
-"""
 import socket
 from struct import pack, unpack
 import asyncio
 from aisle import LogMixin
 from client import Client, RemoteClientError
 from xybase import StreamBase
+from config_parse import PyxyConfig
 
 # from memory_profiler import profile
 SOCKS_VERSION = 5
@@ -25,19 +23,20 @@ class SocksError(Exception):
 
 class SockRelay(StreamBase, LogMixin):
     """维护本地Socks5代理"""
-    username = 'username'
-    password = 'password'
 
     def __init__(self,
-                 sockProxyAddr: str = 'localhost',
-                 sockProxyPort: int = 9011,
-                 remoteAddr: str = 'localhost',
-                 remotePort: int = 9190
+                 config: PyxyConfig,
+                 remoteAddr: str,
+                 remotePort: int
                  ) -> None:
         super().__init__()
 
-        self.sock_proxy_addr = sockProxyAddr
-        self.sock_proxy_port = sockProxyPort
+        self.config = config.client
+        
+        self.username = self.config['username']
+        self.password = self.config['password']
+        self.sock_proxy_addr = self.config['socks5_address']
+        self.sock_proxy_port = self.config['socks5_port']
         self.remote_addr = remoteAddr
         self.remote_port = remotePort
         super().__init__()
@@ -57,7 +56,7 @@ class SockRelay(StreamBase, LogMixin):
 
         server = await asyncio.start_server(
             self.local_sock_handle, self.sock_proxy_addr, self.sock_proxy_port,
-            backlog=4096)
+            backlog=self.config['backlog'])
 
         addr = server.sockets[0].getsockname()
         self.logger.warning(f'服务器启动, 端口:{addr[1]}')
@@ -213,10 +212,9 @@ class SockRelay(StreamBase, LogMixin):
 
 
 if __name__ == '__main__':
+    config = PyxyConfig()
     proxy_server = SockRelay(
-        sockProxyAddr='0.0.0.0',
-        sockProxyPort=9011,
-        # remoteAddr='192.168.3.131',
-        remoteAddr='pyxy.s-2.link',
-        remotePort=9190)
+        config,
+        remoteAddr=config.general['domain'],
+        remotePort=config.server['port'])
     proxy_server.run()

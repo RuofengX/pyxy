@@ -24,8 +24,8 @@ class Client(StreamBase):
     """维护和远程的连接"""
 
     def __init__(self,
-                 remoteAddr: str = 'localhost',
-                 remotePort: int = 9190,
+                 remoteAddr: str,
+                 remotePort: int,
                  tag: str = None
                  ) -> None:
         super().__init__()
@@ -70,7 +70,7 @@ class Client(StreamBase):
         except Exception as error:
             self.logger.warning(f'{error}')
             await self.remote_close()
-            return None, None
+            raise error
 
     async def remote_close(self) -> None:
         """关闭远程的连接
@@ -93,7 +93,3 @@ class Client(StreamBase):
             self.remote_addr, self.remote_port,
             # limit=4096,
             ssl=True)
-
-
-if __name__ == '__main__':
-    client = Client()

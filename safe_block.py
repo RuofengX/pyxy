@@ -45,7 +45,7 @@ class Key():
             
     @property
     def key_string(self) -> str:
-        return str(self.key_bytes)
+        return self.key_bytes.decode()
 
     @key_string.setter
     def key_string(self, value: str):

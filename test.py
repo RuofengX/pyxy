@@ -67,9 +67,9 @@ def stress_test_loop(n: int, times:int=5):
         
                 
 if __name__ == '__main__':
-    # sock_request_test()
+    sock_request_test()
     # time.sleep(1)
-    stress_test_loop(50, 1000)
+    # stress_test_loop(50, 1000)
     
     
 
