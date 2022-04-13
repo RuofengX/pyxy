@@ -128,6 +128,8 @@ class SockRelay(StreamBase, LogMixin):
             if address_type == 1:  # IPv4
                 true_domain = ''
                 true_ip_bytes = await reader.readexactly(4)
+                if true_ip_bytes == b'':
+                    raise SocksError('没有获取到目标IP地址')
                 true_ip = socket.inet_ntoa(true_ip_bytes)
 
             elif address_type == 3:  # 域名
@@ -150,10 +152,13 @@ class SockRelay(StreamBase, LogMixin):
                 'port': true_port
             }
             )
-            if not response is None:
-                bind_address, bind_port = response
-            else:
-                raise RemoteClientError('远程服务器返回错误')
+            
+            bind_address, bind_port = response
+            
+            if bind_address is None or bind_port is None:
+                raise RemoteClientError('远程服务器返回解析错误')
+            
+            
             bind_address_bytes = socket.inet_aton(bind_address)
             bind_address_int = unpack('!I', bind_address_bytes)[0]
 
