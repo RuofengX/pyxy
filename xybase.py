@@ -74,8 +74,8 @@ class StreamBase(LogMixin):
                      r: asyncio.StreamReader,
                      w: asyncio.StreamWriter,
                      debug: str = None,
-                    #  timeout=2.05
-                    timeout=15
+                     timeout=2.05
+                    # timeout=15
                      ) -> None:
         """异步流拷贝
 
