@@ -3,7 +3,7 @@ Filename: client.py
 """
 import asyncio
 import copy
-from typing import Tuple, Coroutine
+from typing import Tuple, Coroutine, Union
 from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
@@ -23,12 +23,13 @@ class RemoteClientError(Exception):
 class Client(StreamBase):
     """维护和远程的连接"""
 
-    def __init__(self,
+    def __init__(self, 
+                 key: str,
                  remoteAddr: str,
                  remotePort: int,
-                 tag: str = None
+                 tag: Union[str, int] = None
                  ) -> None:
-        super().__init__()
+        super().__init__(key=key)
         if tag:
             self.logger: SyncLogger = self.logger.getChild(f'{tag}')
         self.remote_addr = remoteAddr

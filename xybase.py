@@ -31,17 +31,14 @@ except ImportError as err:
 class StreamBase(LogMixin):
     """一个异步处理多个流的基类"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, key: str, *args,**kwargs):
 
         gc.disable()
 
+        self.key = Key(key_string=key)
+        
         self.total_conn_count = 0  # 一共处理了多少连接
         self.current_conn_count = 0  # 目前还在保持的连接数
-
-        with open('key', 'rt') as f:
-            keyStr = f.readline().strip()
-        keyStr = keyStr.replace('\n', '')
-        self.key = Key(keyStr)
 
         super().__init__(*args, **kwargs)
         self.logger.set_level('WARNING')  # Change Log level here!! 在这里更改日志等级！！

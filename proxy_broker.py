@@ -25,13 +25,16 @@ class SockRelay(StreamBase, LogMixin):
     """维护本地Socks5代理"""
 
     def __init__(self,
-                 config: PyxyConfig,
+                 config_all: PyxyConfig,
                  remoteAddr: str,
                  remotePort: int
                  ) -> None:
-        super().__init__()
+        
+        self.key_string = config_all.general['key']
+        
+        super().__init__(self.key_string)
 
-        self.config = config.client
+        self.config = config_all.client
         
         self.username = self.config['username']
         self.password = self.config['password']
@@ -39,7 +42,6 @@ class SockRelay(StreamBase, LogMixin):
         self.sock_proxy_port = self.config['socks5_port']
         self.remote_addr = remoteAddr
         self.remote_port = remotePort
-        super().__init__()
         # self.run()
 
     def run(self):
@@ -144,7 +146,7 @@ class SockRelay(StreamBase, LogMixin):
             logger.info(f'客户端请求 > {true_ip}|{true_domain}:{true_port}')
 
             # 在远程创建真实链接
-            remote_client = Client(self.remote_addr, self.remote_port, tag=request_id)
+            remote_client = Client(self.key_string, self.remote_addr, self.remote_port, tag=request_id)
             response = await remote_client.remote_handshake(payload={
                 'ip': true_ip,
                 'domain': true_domain,
