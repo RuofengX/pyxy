@@ -173,7 +173,7 @@ class StreamBase(LogMixin):
 
         return handler
 
-    async def try_close(self, w: asyncio.StreamWriter, timeout: int=None) -> Coroutine[None, None, None]:
+    async def try_close(self, w: asyncio.StreamWriter, timeout: int=None) -> None:
             """尝试关闭连接，直到连接关闭，或超时
             
             w: asyncio的流写入对象
@@ -203,4 +203,4 @@ class StreamBase(LogMixin):
             
             except Exception as err:
                 self.logger.warning(f'在关闭连接时发生意外错误 > {type(err)} {err}')
-    
+

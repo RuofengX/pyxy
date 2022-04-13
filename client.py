@@ -72,7 +72,7 @@ class Client(StreamBase):
             await self.remote_close()
             return None, None
 
-    async def remote_close(self) -> Coroutine[None, None, None]:
+    async def remote_close(self) -> None:
         """关闭远程的连接
         
         捕获所有异常"""
