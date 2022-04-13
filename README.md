@@ -14,7 +14,7 @@
   - [Data safety](#data-safety)
   - [Troubleshooting](#troubleshooting)
   - [License](#license)
-  - [Develop](#develop)
+  - [Development](#development)
 
 
 ---
@@ -94,9 +94,8 @@ For now troubleshooting is none, but if you have any problem, please open an iss
 
 GPLv3
 
-## Develop
+## Development
 
 Git Branch: Dev
 Linter: mypy
 System: Linux, for testing uvloop and other module purpose  
-Python interpreter: Python 3.9.12, using pypy for better performance and gently exiting.
