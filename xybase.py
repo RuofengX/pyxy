@@ -159,8 +159,8 @@ class StreamBase(LogMixin):
 
             self.total_conn_count += 1
             self.current_conn_count += 1
-            self.logger.debug("开始处理新的连接")
-            self.logger.debug(f"当前并发连接数: {self.current_conn_count}")
+            self.logger.info("开始处理新的连接")
+            self.logger.info(f"当前并发连接数: {self.current_conn_count}")
 
             rtn = await coro(self, *args, **kwargs)
 
@@ -178,13 +178,13 @@ class StreamBase(LogMixin):
                 objgraph.show_growth(shortnames=False)
                 print("-" * 20)
                 if sys.implementation.name == "pypy":
-                    self.logger.warning(
+                    self.logger.info(
                         f"当前内存状态\n{gc.get_stats()}"
                     )  # 该方法会调用一次gc.collect()
                 elif sys.implementation.name == "cpython":
                     process = psutil.Process(os.getpid())
                     memory_info = process.memory_info().rss  # in bytes
-                    self.logger.warning(f"当前内存占用{memory_info / 1024 / 1024:.5}MB")
+                    self.logger.info(f"当前内存占用{memory_info / 1024 / 1024:.5}MB")
 
             return rtn
 
