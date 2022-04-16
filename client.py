@@ -50,7 +50,7 @@ class Client(StreamBase):
 
             bind_address, bind_port = response_block.payload[
                 'bind_address'], response_block.payload['bind_port']
-            self.logger.debug('预协商成功')
+            self.logger.info('预协商成功')
             if (bind_address == '') or (bind_port == 0):
                 raise RemoteClientError('远程的连接建立失败')
 
@@ -59,17 +59,23 @@ class Client(StreamBase):
             return rtn
 
         except ConnectionResetError:
-            self.logger.debug(f'远程连接关闭')
+            self.logger.info(f'远程连接关闭')
             await self.remote_close()
             return None, None
 
         except DecryptError as error:
-            self.logger.debug(f'预协商解密时发生错误 {error}')
+            self.logger.info(f'预协商解密时发生错误 {error}')
             await self.remote_close()
             return None, None
 
+        except ConnectionRefusedError:
+            self.logger.info(f'远程连接失败')
+            # 因为远程连接没有创建，所以不用关闭
+            # await self.remote_close()
+            return None, None
+            
         except Exception as error:
-            self.logger.warning(f'{error}')
+            self.logger.warning(f'其他错误 > {type(error)}|{error}')
             await self.remote_close()
             raise error
 

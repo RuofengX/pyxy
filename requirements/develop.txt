@@ -5,6 +5,7 @@ graphviz==0.19.2
 mypy==0.942
 mypy-extensions==0.4.3
 objgraph==3.5.0
+psutil==5.9.0
 pycodestyle==2.8.0
 pycryptodome==3.14.1
 Pygments==2.11.2

@@ -7,6 +7,7 @@ import sys
 import os
 import warnings
 from ssl import SSLError
+import psutil
 
 import objgraph  # TODO: 内存参考，正式版将会删除
 
@@ -161,14 +162,17 @@ class StreamBase(LogMixin):
 
                 # 仅当当前连接数为0时，才释放内存，防止回收还在等待的协程
                 gc.collect()
+                self.logger.info('GC DONE')
                 self.logger.info('对象增量信息：')
                 print('-' * 20)
                 objgraph.show_growth(shortnames=False)
                 print('-' * 20)
                 if sys.implementation.name == 'pypy':
-                    self.logger.warning(f'垃圾回收完成，当前内存状态\n{gc.get_stats()}')  # 该方法会调用一次gc.collect()
+                    self.logger.warning(f'当前内存状态\n{gc.get_stats()}')  # 该方法会调用一次gc.collect()
                 elif sys.implementation.name == 'cpython':
-                    self.logger.warning(f'垃圾回收完成，当前对象使用内存{sys.getsizeof(self)}')
+                    process = psutil.Process(os.getpid())
+                    memory_info = process.memory_info().rss  # in bytes 
+                    self.logger.warning(f'当前内存占用{memory_info / 1024 / 1024:.5}MB')
 
             return rtn
 

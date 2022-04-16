@@ -192,7 +192,7 @@ class SockRelay(StreamBase, LogMixin):
             logger.warning(f'OS错误 > {error}')
 
         except Exception as error:
-            logger.warning(f'未知错误 > {error}')
+            logger.warning(f'未知错误 > {type(error)}|{error}')
 
         finally:
             try:
@@ -200,12 +200,12 @@ class SockRelay(StreamBase, LogMixin):
                 await writer.wait_closed()
                 logger.debug('本地连接已关闭')
             except Exception as error:
-                logger.warning(f'关闭本地连接失败，连接可能已断开 > {type(error)}|{error}')
+                logger.debug(f'关闭本地连接失败，连接可能已断开 > {type(error)}|{error}')
 
             try:
                 await remote_client.remote_close()
             except Exception as error:
-                logger.warning(f'关闭远程连接失败，连接可能已断开 > {type(error)}|{error}')
+                logger.debug(f'关闭远程连接失败，连接可能已断开 > {type(error)}|{error}')
 
             logger.info('请求处理结束')
 
