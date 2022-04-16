@@ -1,4 +1,3 @@
-from aisle import LOG as logging
 from aisle import LogMixin
 import select
 import socket
@@ -15,20 +14,23 @@ class ThreadingTCPServer(ThreadingMixIn, TCPServer):
 
 class SocksProxy(LogMixin, StreamRequestHandler):
     # [资料](https://docs.python.org/zh-cn/3.7/library/socketserver.html)
-    username = 'username'
-    password = 'password'
+    username = "username"
+    password = "password"
 
     def handle(self):
         # logging.info(self.request)
-        self.logger.info('Accepting connection from %s:%s' % self.client_address)
+        self.logger.info(
+            "Accepting connection from %s:%s" % self.client_address
+        )
 
         # greeting header
         # read and unpack 2 bytes from a client
         header = self.connection.recv(2)  # 取数据包的头2字节，作为Socks5协议的版本号和命令类型
         version, nmethods = struct.unpack("!BB", header)
 
-        # [RFC1928](https://www.quarkay.com/code/383/socks5-protocol-rfc-chinese-traslation )
-        
+        # [RFC1928]
+        # https://www.quarkay.com/code/383/socks5-protocol-rfc-chinese-traslation
+
         # socks 5
         assert version == SOCKS_VERSION
         assert nmethods > 0
@@ -49,21 +51,28 @@ class SocksProxy(LogMixin, StreamRequestHandler):
             return
 
         # request
-        version, cmd, _, address_type = struct.unpack("!BBBB", self.connection.recv(4))
+        version, cmd, _, address_type = struct.unpack(
+            "!BBBB", self.connection.recv(4)
+        )
         assert version == SOCKS_VERSION
 
         if address_type == 1:  # IPv4
             ipAddress = socket.inet_ntoa(self.connection.recv(4))
         elif address_type == 3:  # Domain name
-            domain_length = self.connection.recv(1)[0]  # 对bytes进行切片[0]，返回一个int，相当于强转
+            domain_length = self.connection.recv(1)[
+                0
+            ]  # 对bytes进行切片[0]，返回一个int，相当于强转
             domainAddress = self.connection.recv(domain_length)
-            ipAddress = socket.gethostbyname(domainAddress)  # 将域名解析为IPv4地址  #TODO:需要考虑到DNS也走代理的情况
-        
-        #TODO: address_type == 4  # IPv6
-        
-        port = struct.unpack('!H', self.connection.recv(2))[0]  # 对单元素tuple切片，返回一个int
-        
-        
+            ipAddress = socket.gethostbyname(
+                domainAddress
+            )  # 将域名解析为IPv4地址  #TODO:需要考虑到DNS也走代理的情况
+
+        # TODO: address_type == 4  # IPv6
+
+        port = struct.unpack("!H", self.connection.recv(2))[
+            0
+        ]  # 对单元素tuple切片，返回一个int
+
         # reply
         # 创建真实连接
         try:
@@ -76,8 +85,9 @@ class SocksProxy(LogMixin, StreamRequestHandler):
 
             addr = struct.unpack("!I", socket.inet_aton(bind_address[0]))[0]
             port = bind_address[1]
-            reply = struct.pack("!BBBBIH", SOCKS_VERSION, 0, 0, 1,
-                                addr, port)  # 对sock客户端响应连接的结果
+            reply = struct.pack(
+                "!BBBBIH", SOCKS_VERSION, 0, 0, 1, addr, port
+            )  # 对sock客户端响应连接的结果
             pass
         except Exception as err:
             self.logger.error(err)
@@ -96,7 +106,7 @@ class SocksProxy(LogMixin, StreamRequestHandler):
                 ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
                 应该是数据传回客户端中出现异常
                 """
-                self.logger.info('客户端关闭了连接')
+                self.logger.info("客户端关闭了连接")
 
         self.server.close_request(self.request)
 
@@ -112,10 +122,10 @@ class SocksProxy(LogMixin, StreamRequestHandler):
         assert version == 1
 
         username_len = ord(self.connection.recv(1))
-        username = self.connection.recv(username_len).decode('utf-8')
+        username = self.connection.recv(username_len).decode("utf-8")
 
         password_len = ord(self.connection.recv(1))
-        password = self.connection.recv(password_len).decode('utf-8')
+        password = self.connection.recv(password_len).decode("utf-8")
 
         if username == self.username and password == self.password:
             # success, status = 0
@@ -130,7 +140,9 @@ class SocksProxy(LogMixin, StreamRequestHandler):
         return False
 
     def generate_failed_reply(self, address_type, error_number):
-        return struct.pack("!BBBBIH", SOCKS_VERSION, error_number, 0, address_type, 0, 0)
+        return struct.pack(
+            "!BBBBIH", SOCKS_VERSION, error_number, 0, address_type, 0, 0
+        )
 
     def exchange_loop(self, client, remote):
 
@@ -150,6 +162,6 @@ class SocksProxy(LogMixin, StreamRequestHandler):
                     break
 
 
-if __name__ == '__main__':
-    with ThreadingTCPServer(('127.0.0.1', 9011), SocksProxy) as server:
+if __name__ == "__main__":
+    with ThreadingTCPServer(("127.0.0.1", 9011), SocksProxy) as server:
         server.serve_forever()
