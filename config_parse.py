@@ -1,6 +1,6 @@
 import os
 import toml
-from typing import Iterable, Union, Any, NoReturn, Dict
+from typing import Union, Any, NoReturn, Dict
 import pprint
 
 from safe_block import Key
@@ -108,10 +108,14 @@ class ConfigParser(LogMixin):
         """
 
         def check_i(
-            target: Union[dict, Iterable[Any]],
-            standard: Union[dict, Iterable[Any]],
+            target: Union[dict, list],
+            standard: Union[dict, list],
         ) -> bool:
-            """递归检查target字典是否包含standard所有key"""
+            """递归检查target字典是否包含standard所有key
+
+            target: 待检查的字典，或字典的values列表
+            standard: 标准字典，或字典的values列表
+            """
             if not isinstance(target, dict) or not isinstance(standard, dict):
                 return True
 
