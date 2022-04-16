@@ -46,7 +46,7 @@ class StreamBase(LogMixin):
         self.current_conn_count = 0  # 目前还在保持的连接数
 
         super().__init__(*args, **kwargs)
-        self.logger.set_level("WARNING")  # Change Log level here!! 在这里更改日志等级！！
+        self.logger.set_level("INFO")  # Change Log level here!! 在这里更改日志等级！！
 
     async def exchange_stream(
         self,
