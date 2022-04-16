@@ -41,7 +41,7 @@ class StreamBase(LogMixin):
         self.current_conn_count = 0  # 目前还在保持的连接数
 
         super().__init__(*args, **kwargs)
-        self.logger.set_level('WARNING')  # Change Log level here!! 在这里更改日志等级！！
+        self.logger.set_level('INFO')  # Change Log level here!! 在这里更改日志等级！！
 
     async def exchange_stream(self,
                               localReader: asyncio.StreamReader,
@@ -148,14 +148,14 @@ class StreamBase(LogMixin):
 
             self.total_conn_count += 1
             self.current_conn_count += 1
-            self.logger.debug('开始处理新的连接')
-            self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
+            self.logger.info('开始处理新的连接')
+            self.logger.info(f'当前并发连接数: {self.current_conn_count}')
 
             rtn = await coro(self, *args, **kwargs)
 
             self.current_conn_count -= 1
-            self.logger.debug('连接处理完毕')
-            self.logger.debug(f'当前并发连接数: {self.current_conn_count}')
+            self.logger.info('连接处理完毕')
+            self.logger.info(f'当前并发连接数: {self.current_conn_count}')
 
             if self.current_conn_count == 0:
                 objgraph.show_growth(shortnames=False)  # TODO: 正式版删除
