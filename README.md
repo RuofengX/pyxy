@@ -5,6 +5,7 @@
 - [PyXy](#pyxy)
   - [“朋友需要”](#朋友需要)
   - [Dependencies](#dependencies)
+    - [Known issues](#known-issues)
   - [Before you run](#before-you-run)
     - [TLS Certificate](#tls-certificate)
   - [Run server and client](#run-server-and-client)
@@ -41,6 +42,11 @@ If you are using linux system, OR you could make sure that your system could use
 Uvloop will boost the program into a higher level, if you are running on weak ARM or little VPS server, MAKE SURE you are install uvloop, and the module is imported correctly.
 
 Tested environment is `CPython3.8.10` with `uvloop` module.
+
+### Known issues
+
+> Use pip to install psutil may fail on some linux system. You could try to use `sudo apt install gcc python3-dev` on Debian-based distro to install the dependence to fix.  
+> https://github.com/giampaolo/psutil/issues/1142
 
 ## Before you run
 
