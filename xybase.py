@@ -165,8 +165,8 @@ class StreamBase(LogMixin):
             rtn = await coro(self, *args, **kwargs)
 
             self.current_conn_count -= 1
-            self.logger.debug("连接处理完毕")
-            self.logger.debug(f"当前并发连接数: {self.current_conn_count}")
+            self.logger.info("连接处理完毕")
+            self.logger.info(f"当前并发连接数: {self.current_conn_count}")
 
             if self.current_conn_count == 0:
 
@@ -207,7 +207,7 @@ class StreamBase(LogMixin):
             else:
                 await w.wait_closed()
 
-            self.logger.info("远程连接已关闭")
+            self.logger.debug("远程连接已关闭")
 
         except asyncio.TimeoutError:
             self.logger.warning("在关闭连接时超时")
