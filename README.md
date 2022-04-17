@@ -71,6 +71,8 @@ python3 server.py
 
 These would run the whole server.  
 
+Additionally, if your server has multiple core, use `python3 multi_server.py` to run multiple server. The default processor number is 4.
+
 ### Client side
 
 Copy the config file from server, and then run:  
