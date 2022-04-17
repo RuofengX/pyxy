@@ -11,7 +11,7 @@ import psutil
 import objgraph  # TODO: 内存参考，正式版将会删除
 
 from safe_block import Key
-from aisle import LogMixin
+from aisle import LogMixin, SyncLogger
 
 ENABLE_UVLOOP = False
 try:
@@ -43,7 +43,7 @@ class StreamBase(LogMixin):
         super().__init__(*args, **kwargs)
 
         if name:
-            self.logger = self.logger.get_child(name)
+            self.logger: SyncLogger = self.logger.get_child(name)
 
         self.logger.set_level("WARNING")  # Change Log level here!! 在这里更改日志等级！！
 

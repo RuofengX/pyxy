@@ -42,6 +42,7 @@ class Server(StreamBase):
             # limit=4096,  # 创建的流的缓冲大小
             ssl=self.safe_context,
             backlog=self.config["backlog"],
+            reuse_port=True,
         )
         self.logger.warning(
             f"Server starting at  \
