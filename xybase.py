@@ -45,7 +45,7 @@ class StreamBase(LogMixin):
         if name:
             self.logger: SyncLogger = self.logger.get_child(name)
 
-        self.logger.set_level("WARNING")  # Change Log level here!! 在这里更改日志等级！！
+        self.logger.set_level("INFO")  # Change Log level here!! 在这里更改日志等级！！
 
         self.key = Key(key_string=key)
 
@@ -180,7 +180,6 @@ class StreamBase(LogMixin):
                 self.logger.info("对象增量信息：")
                 print("-" * 20)
                 objgraph.show_growth(shortnames=False)
-                print("-" * 20)
                 if sys.implementation.name == "pypy":
                     self.logger.info(
                         f"当前内存状态\n{gc.get_stats()}"

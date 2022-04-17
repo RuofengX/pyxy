@@ -1,4 +1,5 @@
 import asyncio
+import sys
 
 
 class MultiServer:
@@ -12,7 +13,7 @@ class MultiServer:
         loop.run_forever()
 
     async def start_process(self):
-        p = await asyncio.create_subprocess_exec("python3", "server.py")
+        p = await asyncio.create_subprocess_exec("python3", "server.py", stdout=sys.stdout, stderr=sys.stderr)
         await p.wait()
 
 

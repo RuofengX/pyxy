@@ -2,6 +2,7 @@
 import asyncio
 import socket
 import ssl
+import os
 from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
@@ -15,6 +16,7 @@ class Server(StreamBase):
         self.key_string = config.general["key"]
         super().__init__(self.key_string)
         self.config = config.server
+        self.logger.name = str(os.getpid())
         if name:
             self.logger = self.logger.get_child(suffix=name)
         # 获取安全环境
@@ -45,9 +47,7 @@ class Server(StreamBase):
             reuse_port=True,
         )
         self.logger.warning(
-            f"Server starting at  \
-                {self.config['ipv4_address']}: \
-                {self.config['port']}"
+            f"Server starting at {self.config['ipv4_address']}:{self.config['port']}"
         )
         async with server:
             await server.serve_forever()
