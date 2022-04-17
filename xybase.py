@@ -36,17 +36,21 @@ except ImportError as err:
 class StreamBase(LogMixin):
     """一个异步处理多个流的基类"""
 
-    def __init__(self, key: str, *args, **kwargs):
+    def __init__(self, key: str, name: str = None, *args, **kwargs):
 
         gc.disable()
+
+        super().__init__(*args, **kwargs)
+
+        if name:
+            self.logger = self.logger.get_child(name)
+
+        self.logger.set_level("WARNING")  # Change Log level here!! 在这里更改日志等级！！
 
         self.key = Key(key_string=key)
 
         self.total_conn_count = 0  # 一共处理了多少连接
         self.current_conn_count = 0  # 目前还在保持的连接数
-
-        super().__init__(*args, **kwargs)
-        self.logger.set_level("WARNING")  # Change Log level here!! 在这里更改日志等级！！
 
     async def exchange_stream(
         self,
