@@ -6,8 +6,8 @@ import sys
 import os
 import warnings
 from ssl import SSLError
-import psutil
 
+import psutil
 import objgraph  # TODO: 内存参考，正式版将会删除
 
 from safe_block import Key

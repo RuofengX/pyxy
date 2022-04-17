@@ -67,6 +67,7 @@ def stress_test_loop(n: int, times: int = 5):
     """循环压测
 
     n: 一轮循环的请求总量
+    times: 循环次数
     """
     for i in range(times):
         stress_test(n)
@@ -75,6 +76,6 @@ def stress_test_loop(n: int, times: int = 5):
 
 
 if __name__ == "__main__":
-    sock_request_test()
+    # sock_request_test()
     # time.sleep(1)
-    # stress_test_loop(50, 1000)
+    stress_test_loop(50, 1000)
