@@ -2,6 +2,7 @@
 import asyncio
 import socket
 import ssl
+import os
 from safe_block import Block, DecryptError
 from xybase import StreamBase
 from aisle import SyncLogger
@@ -11,10 +12,13 @@ from config_parse import PyxyConfig
 class Server(StreamBase):
     """服务器对象"""
 
-    def __init__(self, config: PyxyConfig):
+    def __init__(self, config: PyxyConfig, name: str = None):
         self.key_string = config.general["key"]
         super().__init__(self.key_string)
         self.config = config.server
+        self.logger.name = str(os.getpid())
+        if name:
+            self.logger = self.logger.get_child(suffix=name)
         # 获取安全环境
         self.safe_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.safe_context.load_cert_chain(
@@ -40,19 +44,16 @@ class Server(StreamBase):
             # limit=4096,  # 创建的流的缓冲大小
             ssl=self.safe_context,
             backlog=self.config["backlog"],
+            reuse_port=True,
         )
         self.logger.warning(
-            f"Server starting at  \
-                {self.config['ipv4_address']}: \
-                {self.config['port']}"
+            f"Server starting at {self.config['ipv4_address']}:{self.config['port']}"
         )
         async with server:
             await server.serve_forever()
 
     @StreamBase.handlerDeco
-    async def handler(
-        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
-    ):
+    async def handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """处理请求，捕获所有的异常"""
 
         request_id = self.total_conn_count
@@ -76,16 +77,12 @@ class Server(StreamBase):
 
         if true_domain:
             true_ip = socket.gethostbyname(true_domain)
-        logger.info(
-            f"Start true connect > {true_ip}|{true_domain}:{true_port}"
-        )
+        logger.info(f"Start true connect > {true_ip}|{true_domain}:{true_port}")
 
         # 3. 尝试建立真实连接
         bind_address, bind_port = "", 0
         try:
-            true_reader, true_writer = await asyncio.open_connection(
-                true_ip, true_port
-            )
+            true_reader, true_writer = await asyncio.open_connection(true_ip, true_port)
 
             bind_address, bind_port = true_writer.get_extra_info("sockname")
 
@@ -102,9 +99,7 @@ class Server(StreamBase):
 
         # 4. 开始转发
         try:
-            await self.exchange_stream(
-                reader, writer, true_reader, true_writer
-            )
+            await self.exchange_stream(reader, writer, true_reader, true_writer)
 
         # 第一步之后的异常处理
         except socket.gaierror as error:
@@ -126,9 +121,7 @@ class Server(StreamBase):
             logger.error(f"Unknown error > {type(error)} {error}")
 
         finally:
-            await asyncio.gather(
-                self.try_close(true_writer), self.try_close(writer)
-            )
+            await asyncio.gather(self.try_close(true_writer), self.try_close(writer))
 
             # 收尾工作
             logger.debug("Request Handle End")

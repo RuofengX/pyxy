@@ -25,12 +25,16 @@ class SockRelay(StreamBase, LogMixin):
     """维护本地Socks5代理"""
 
     def __init__(
-        self, config_all: PyxyConfig, remoteAddr: str, remotePort: int
+        self,
+        config_all: PyxyConfig,
+        remote_addr: str,
+        remote_port: int,
+        name: str = None,
     ) -> None:
 
         self.key_string = config_all.general["key"]
 
-        super().__init__(self.key_string)
+        super().__init__(self.key_string, name=name)
 
         self.config = config_all.client
 
@@ -38,8 +42,8 @@ class SockRelay(StreamBase, LogMixin):
         self.password = self.config["password"]
         self.sock_proxy_addr = self.config["socks5_address"]
         self.sock_proxy_port = self.config["socks5_port"]
-        self.remote_addr = remoteAddr
-        self.remote_port = remotePort
+        self.remote_addr = remote_addr
+        self.remote_port = remote_port
         # self.run()
 
     def run(self):
@@ -227,7 +231,8 @@ if __name__ == "__main__":
     config = PyxyConfig()
     proxy_server = SockRelay(
         config,
-        remoteAddr=config.general["domain"],
-        remotePort=config.server["port"],
+        remote_addr=config.general["domain"],
+        remote_port=config.server["port"],
+        name='1'
     )
     proxy_server.run()
