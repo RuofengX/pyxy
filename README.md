@@ -53,7 +53,7 @@ Tested environment is `CPython3.8.10` with `uvloop` module.
 ### TLS Certificate
 
 The best solution is register a domain and apply a SSL certificate.  
-In server module, you can set the certificate file and key file in `Server.__init__()` function.  
+You could configure the path of your certificate in config.toml file. Read config.example for more information.
 
 There are also some other ways to bypass this problem, but it's not recommended.
 
