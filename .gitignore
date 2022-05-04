@@ -3,6 +3,8 @@ certs/
 certs.zip
 key
 .vscode
+config.toml
+.config.toml
 
 
 

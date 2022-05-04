@@ -6,12 +6,12 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 # debug
-# from pympler import asizeof 
+# from pympler import asizeof
 # import sys
 # from objprint import op
 
 
-class Key():
+class Key:
     """用来加解密的key
 
     Raises:
@@ -21,67 +21,64 @@ class Key():
     Returns:
         self: 一个16位比特串
     """
-    __slots__ = '_keyBytes'
-    
-    
-    def __init__(self, keyString: str='') -> None:
-        if not keyString:
-            keyString = str(uuid.uuid4().hex)
-        self.keyBytes = keyString.encode('utf-8')
+
+    __slots__ = "_key_bytes"
+
+    def __init__(self, key_string: str = "") -> None:
+        if not key_string:
+            key_string = str(uuid.uuid4().hex)
+        self.key_bytes = key_string.encode("utf-8")
         pass
-            
-    @property
-    def keyBytes(self) -> bytes:
-        return self._keyBytes
 
-    @keyBytes.setter
-    def keyBytes(self, value: bytes):
+    @property
+    def key_bytes(self) -> bytes:
+        return self._key_bytes
+
+    @key_bytes.setter
+    def key_bytes(self, value: bytes):
         if not isinstance(value, bytes):
-            raise TypeError('key must be bytes')
+            raise TypeError("key must be bytes")
         elif len(value) != 32:
-            raise ValueError('key must be 32 bytes')
+            raise ValueError("key must be 32 bytes")
         else:
-            self._keyBytes = value
-            
+            self._key_bytes = value
+
     @property
-    def keyString(self) -> str:
-        return str(self.keyBytes)
+    def key_string(self) -> str:
+        return self.key_bytes.decode()
 
-    @keyString.setter
-    def keyString(self, value: str):
-        self.keyBytes = value.encode('utf-8')
-            
+    @key_string.setter
+    def key_string(self, value: str):
+        self.key_bytes = value.encode("utf-8")
 
 
-class Cryptor():
-    __slots__ = ['cipher', 'blockSize']
-    
-    
-    def __init__(self, keyBytes: bytes) -> None:
+class Crypto:
+    __slots__ = ["cipher", "block_size"]
+
+    def __init__(self, key_bytes: bytes) -> None:
         super().__init__()
-        now = time.time()
-        self.cipher = AES.new(keyBytes, AES.MODE_ECB)
-        self.blockSize = 32
+        self.cipher = AES.new(key_bytes, AES.MODE_ECB)
+        self.block_size = 32
 
     def encrypt(self, b: bytes) -> bytes:
         """输入的字节串无需填充"""
-        return self.cipher.encrypt(pad(b, self.blockSize))
+        return self.cipher.encrypt(pad(b, self.block_size))
 
-    def decrypt(self, b: bytes) -> bytes:            
+    def decrypt(self, b: bytes) -> bytes:
         try:
-            return unpad(self.cipher.decrypt(b), self.blockSize)
+            return unpad(self.cipher.decrypt(b), self.block_size)
         except ValueError:
             """解密错误，解密失败"""
-            raise DecryptError('解密错误')
+            raise DecryptError("解密错误")
 
 
-class Block():
-    """安全区块
-    """
-    __slots__ = 'uuid', 'key', 'payload', 'timestamp', '_crpto'
-    
+class Block:
+    """安全区块"""
+
+    __slots__ = "uuid", "key", "payload", "timestamp", "_crypto"
+
     @classmethod
-    def fromBytes(cls, key: Key, b: bytes) -> 'Block':
+    def from_bytes(cls, key: Key, b: bytes) -> "Block":
         """解密字节串并转换为Block对象
 
         Args:
@@ -90,72 +87,70 @@ class Block():
         Raises:
             DecryptError: 解密错误，解密失败
         """
-        crpto = Cryptor(key.keyBytes)
-        rebuildDict = json.loads(crpto.decrypt(b).decode('utf-8'))
-        vTime = rebuildDict['timestamp'] - int(time.time())  # 验证时间是否大于10秒
+        crypto = Crypto(key.key_bytes)
+        rebuild_dict = json.loads(crypto.decrypt(b).decode("utf-8"))
+        vTime = rebuild_dict["timestamp"] - int(time.time())  # 验证时间是否大于10秒
         if vTime >= 10:
-            raise DecryptError('时间戳误差大于10秒')
-        
+            raise DecryptError("时间戳误差大于10秒")
+
         rtn = cls(key, {})  # 创建空的Block对象
-        rtn.uuid = rebuildDict['uuid']  # 强制重载
-        rtn.payload = rebuildDict['payload']  # 强制重载
-        rtn.timestamp = rebuildDict['timestamp']
-        
+        rtn.uuid = rebuild_dict["uuid"]  # 强制重载
+        rtn.payload = rebuild_dict["payload"]  # 强制重载
+        rtn.timestamp = rebuild_dict["timestamp"]
+
         return rtn
 
-    
     def __init__(self, key: Key, payload: dict = {}) -> None:
         """安全区块构造函数"""
         super().__init__()
-        
+
         # 四个参数（简称ukpt）都会加密
         self.uuid = uuid.uuid4().hex
-        self.key = key.keyString
+        self.key = key.key_string
         self.payload = payload
         self.timestamp = int(time.time())
-        self._crpto = Cryptor(key.keyBytes)
+        self._crypto = Crypto(key.key_bytes)
         pass
-    
+
     @property
-    def blockBytes(self) -> bytes:
-        """自我加密后，返回ukp的字节串"""
-        rtn = self._crpto.encrypt(json.dumps(self.__ukpt).encode('utf-8'))
+    def block_bytes(self) -> bytes:
+        """自我加密后，返回ukpt的字节串"""
+        rtn = self._crypto.encrypt(json.dumps(self.__ukpt).encode("utf-8"))
         return rtn
-    
-    def __enter__(self) -> 'Block':
-        """上下文管理器支持，返回自身"""
+
+    def __enter__(self) -> "Block":
+        """返回自身"""
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """上下文管理器支持，减小内存消耗"""
         del self
-        
+
     @property
     def __ukpt(self) -> dict:
         # ukpt取首字母
         return {
-            'uuid': self.uuid,
-            'key': self.key,
-            'payload': self.payload,
-            'timestamp': self.timestamp
-            
+            "uuid": self.uuid,
+            "key": self.key,
+            "payload": self.payload,
+            "timestamp": self.timestamp,
         }
-
-        
 
 
 class DecryptError(Exception):
     """解密错误"""
+
     pass
 
 
 def test():
     key = Key()
-    LOG.info(key.keyBytes)
-    blk = Block(key, {'a': 1})
-    print(blk.blockBytes)
-    blk2 = Block.fromBytes(key, blk.blockBytes)
+    LOG.info(key.key_bytes)
+    blk = Block(key, {"a": 1})
+    print(blk.block_bytes)
+    Block.from_bytes(key, blk.block_bytes)
     pass
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     test()
