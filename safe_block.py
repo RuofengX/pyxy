@@ -123,11 +123,11 @@ class Block():
         return rtn
     
     def __enter__(self) -> 'Block':
-        """返回自身"""
+        """上下文管理器支持，返回自身"""
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        """减小内存消耗"""
+        """上下文管理器支持，减小内存消耗"""
         del self
         
     @property
