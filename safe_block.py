@@ -88,7 +88,7 @@ class Block:
             DecryptError: 解密错误，解密失败
         """
         crypto = Crypto(key.key_bytes)
-        rebuild_dict = json.loads(crypto.decrypt(b).decode("utf-8"))
+        rebuild_dict = json.loads(crypto.decrypt(b).decode("ascii"))
         vTime = rebuild_dict["timestamp"] - int(time.time())  # 验证时间是否大于10秒
         if vTime >= 10:
             raise DecryptError("时间戳误差大于10秒")
@@ -115,7 +115,12 @@ class Block:
     @property
     def block_bytes(self) -> bytes:
         """自我加密后，返回ukpt的字节串"""
-        rtn = self._crypto.encrypt(json.dumps(self.__ukpt).encode("utf-8"))
+        # print('=' * 20)
+        # print('DEBUG::raw block bytes')
+        # print(json.dumps(self.__ukpt).encode("utf8"))
+        # print(json.dumps(self.__ukpt).encode("ascii"))
+        # print('=' * 20)
+        rtn = self._crypto.encrypt(json.dumps(self.__ukpt).encode("ascii"))
         return rtn
 
     def __enter__(self) -> "Block":
