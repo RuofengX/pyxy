@@ -5,7 +5,7 @@
 - [PyXy](#pyxy)
   - [“朋友需要”](#朋友需要)
   - [Dependencies](#dependencies)
-    - [Known issues](#known-issues)
+    - [Known dependence issues](#known-dependence-issues)
   - [Before you run](#before-you-run)
     - [TLS Certificate](#tls-certificate)
   - [Run server and client](#run-server-and-client)
@@ -15,6 +15,7 @@
   - [Troubleshooting](#troubleshooting)
   - [License](#license)
   - [Development Guide](#development-guide)
+  - [Known Issues](#known-issues)
 
 ---
 
@@ -42,7 +43,7 @@ Uvloop will boost the program into a higher level, if you are running on weak AR
 
 Tested environment is `CPython3.8.10` with `uvloop` module.
 
-### Known issues
+### Known dependence issues
 
 > Use pip to install psutil may fail on some linux system. You could try to use `sudo apt install gcc python3-dev` on Debian-based distro to install the dependence to fix.  
 > <https://github.com/giampaolo/psutil/issues/1142>
@@ -102,6 +103,6 @@ GPLv3
 
 If you want to get involved in, just fork this repo, and create a feature branch. Issue or PR is welcome here!  
 
-## Known Issue
+## Known Issues
 
 Running server.py for a long time wil cause several connect leak, which means there will be some connections not closed corrently. Futher research is needed.
