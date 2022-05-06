@@ -16,24 +16,23 @@
   - [License](#license)
   - [Development Guide](#development-guide)
 
-
 ---
 
 An async stream tunnel program, written in python, using asyncio.
 
 This project is an open-source project, it is absolutely free to use, but you should be aware of the following:
-- Do not use it for illegal(in any country or region) purposes.
-- Remember there is no warranty for this program, 
-- Also no warranty to data , transfer or your privacy safety.
 
+- Do not use it for illegal(in any country or region) purposes.
+- Remember there is no warranty for this program,
+- Also no warranty to data , transfer or your privacy safety.
 
 ## Dependencies
 
 **CPython 3.7+** is needed for safety reason and some asyncio future.  
 **Pypy** is NOT welcome here since it's lack of support for uvloop. You can check these issues here:
 
-- https://github.com/PyO3/pyo3/issues/2137
-- https://github.com/MagicStack/uvloop/issues/380
+- <https://github.com/PyO3/pyo3/issues/2137>
+- <https://github.com/MagicStack/uvloop/issues/380>
 
 In most cases, you can use `pip install -r requirements/compatible.txt` to install all dependencies. If that doesn't work, please open an issue.  
 Using `venv` to creating a virtual environment is also recommended, it's all depended on you.
@@ -46,7 +45,7 @@ Tested environment is `CPython3.8.10` with `uvloop` module.
 ### Known issues
 
 > Use pip to install psutil may fail on some linux system. You could try to use `sudo apt install gcc python3-dev` on Debian-based distro to install the dependence to fix.  
-> https://github.com/giampaolo/psutil/issues/1142
+> <https://github.com/giampaolo/psutil/issues/1142>
 
 ## Before you run
 
@@ -62,6 +61,7 @@ There are also some other ways to bypass this problem, but it's not recommended.
 At first time you run `python3 server.py` or `python3 proxy_broker.py`, the program will go into error. But don't worry, you just need to change the generated config file `config.toml`. Set everything in it correctly according to `config.example`. You should also make sure that the config on server and local are same. And, that's it!
 
 ### Server side
+
 Running these code on a server with a domain name and a SSL certificate, which is configured in config.toml file.  
 Don't forget to leave the firewall open for this program. The default port is `9190`.  
 
@@ -101,3 +101,7 @@ GPLv3
 ## Development Guide
 
 If you want to get involved in, just fork this repo, and create a feature branch. Issue or PR is welcome here!  
+
+## Known Issue
+
+Running server.py for a long time wil cause several connect leak, which means there will be some connections not closed corrently. Futher research is needed.
