@@ -172,7 +172,7 @@ class SockRelay(StreamBase, LogMixin):
             bind_address, bind_port = response
 
             if bind_address is None or bind_port is None:
-                raise RemoteClientError("远程服务器返回解析错误")
+                raise RemoteClientError("远程的客户端错误")
 
             bind_address_bytes = socket.inet_aton(bind_address)
             bind_address_int = unpack("!I", bind_address_bytes)[0]

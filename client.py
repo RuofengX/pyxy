@@ -64,17 +64,17 @@ class Client(StreamBase):
             return rtn
 
         except ConnectionResetError:
-            self.logger.info("远程连接关闭")
+            self.logger.warning("远程连接关闭")
             await self.remote_close()
             return None, None
 
         except DecryptError as error:
-            self.logger.info(f"预协商解密时发生错误 {error}")
+            self.logger.warning(f"预协商解密时发生错误 {error}")
             await self.remote_close()
             return None, None
 
         except ConnectionRefusedError:
-            self.logger.info("远程连接失败")
+            self.logger.warning("远程连接被拒绝")
             # 因为远程连接没有创建，所以不用关闭
             # await self.remote_close()
             return None, None
